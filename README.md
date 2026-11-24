@@ -31,10 +31,14 @@ Pass and play, or face to face across a tablet. Choose board size, number of hid
 
 Optional Google sign-in (same OAuth client as Class Manager, `drive.file` scope). Progress is saved as an AES-GCM encrypted file in a “Honeycomb War” folder in the player's own Google Drive, and in the browser. Without signing in, data stays only in this browser.
 
+## Background music
+
+“New Sunrise” from OpenGameArt.org, https://opengameart.org/content/new-sunrise. License: CC0 1.0 Universal (public domain), https://creativecommons.org/publicdomain/zero/1.0/. It's the same track used in [ELAdventure](https://github.com/MrWengKB/ELAdventure). Players turn it on with the “Play background music” tickbox on the main menu (off by default). Credits are also shown in the game under “Music credits”.
+
 ## Files
 
 - `index.html`, `style.css`
 - `js/game.js` rules engine (also runs in Node), `js/cpu.js` CPU player
-- `js/sound.js` sound effects (Web Audio, no files), `js/ui.js` board drawing and dialogs, `js/main.js` screens and game flow
+- `js/music.js` background music (`music/bgm.mp3`), `js/sound.js` sound effects (Web Audio, no files), `js/ui.js` board drawing and dialogs, `js/main.js` screens and game flow
 - `js/auth.js` Google sign-in, `js/drive.js` Drive file, `js/crypto.js` encryption, `js/store.js` profile
 - `tests/game.test.js`: `node tests/game.test.js`

@@ -527,6 +527,19 @@
     showSnd();
     $('#gZoomIn').addEventListener('click', () => board && board.setZoom(board.zoom * 1.4));
     $('#gZoomOut').addEventListener('click', () => board && board.setZoom(board.zoom / 1.4));
+    $('#optMusic').checked = window.Music.on;
+    $('#optMusic').addEventListener('change', e => window.Music.setOn(e.target.checked));
+    $('#btnCredits').addEventListener('click', () => {
+      const box = document.createElement('div');
+      box.className = 'credits';
+      box.innerHTML = `<p>Background music: <b>“New Sunrise”</b>, from
+        <a href="https://opengameart.org/content/new-sunrise" target="_blank" rel="noopener">OpenGameArt.org</a>.</p>
+        <p>License: <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener">CC0 1.0 Universal (Public Domain Dedication)</a>.
+        No attribution is required, but thank you to its creator.</p>
+        <p>The same track plays in <a href="https://github.com/MrWengKB/ELAdventure" target="_blank" rel="noopener">ELAdventure</a>.</p>
+        <p>Sound effects are generated in the browser by the game itself.</p>`;
+      UI.dialog({ title: 'Music credits', html: box });
+    });
     $('#optConfirm').addEventListener('change', e => { prefs().confirm = e.target.checked; window.Store.save(); });
     $('#btnAccount').addEventListener('click', async () => {
       if (window.Store.mode() === 'google' && window.Auth.current()) {

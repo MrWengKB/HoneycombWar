@@ -7,7 +7,7 @@
   <meta name="description" content="A turn-based strategy game on a honeycomb board. Claim cells, find hidden items, and surround the enemy base.">
   <meta name="theme-color" content="#f5b301">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=1.6.0">
+  <link rel="stylesheet" href="style.css?v=1.7.0">
 </head>
 <body>
   <!-- Welcome -->
@@ -48,11 +48,14 @@
         <button id="btnFriend" class="btn" type="button">Play with a friend</button>
         <button id="btnHow" class="btn ghost" type="button">How to play</button>
       </div>
+      <label class="toggle"><input type="checkbox" id="optMusic"> Play background music</label>
       <label class="toggle"><input type="checkbox" id="optConfirm"> Tap twice to confirm a move</label>
       <div class="menufoot">
         <button id="btnAccount" class="link" type="button"></button>
         <span>·</span>
         <a href="privacy.html" class="link">Privacy</a>
+        <span>·</span>
+        <button id="btnCredits" class="link" type="button">Music credits</button>
         <span>·</span>
         <span id="ver"></span>
       </div>
@@ -160,15 +163,16 @@
     </div>
   </template>
 
-  <script src="js/config.js?v=1.6.0"></script>
-  <script src="js/game.js?v=1.6.0"></script>
-  <script src="js/cpu.js?v=1.6.0"></script>
-  <script src="js/crypto.js?v=1.6.0"></script>
-  <script src="js/auth.js?v=1.6.0"></script>
-  <script src="js/drive.js?v=1.6.0"></script>
-  <script src="js/store.js?v=1.6.0"></script>
-  <script src="js/sound.js?v=1.6.0"></script>
-  <script src="js/ui.js?v=1.6.0"></script>
-  <script src="js/main.js?v=1.6.0"></script>
+  <script src="js/config.js?v=1.7.0"></script>
+  <script src="js/game.js?v=1.7.0"></script>
+  <script src="js/cpu.js?v=1.7.0"></script>
+  <script src="js/crypto.js?v=1.7.0"></script>
+  <script src="js/auth.js?v=1.7.0"></script>
+  <script src="js/drive.js?v=1.7.0"></script>
+  <script src="js/store.js?v=1.7.0"></script>
+  <script src="js/sound.js?v=1.7.0"></script>
+  <script src="js/music.js?v=1.7.0"></script>
+  <script src="js/ui.js?v=1.7.0"></script>
+  <script src="js/main.js?v=1.7.0"></script>
 </body>
 </html>
