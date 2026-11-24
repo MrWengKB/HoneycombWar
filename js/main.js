@@ -307,7 +307,7 @@
     if (kind === 'attack') {
       const pre = G.previewAttack(game, i, game.turn);
       const def = game.players[1 - game.turn].def;
-      const tail = pre.result === 'capture' ? 'captures this cell' : pre.result === 'wall' ? 'breaks 1 wall layer' : 'does nothing';
+      const tail = pre.result === 'capture' ? 'captures this cell' : pre.result === 'wall' ? 'breaks 1 wall layer' : 'does nothing, so it counts as a pass';
       st.textContent = rnd + `Attack ${pl.atk} − defense ${def} = ${pre.dmg}: ${tail}` + (confirmMoves() && selected === i ? '. Tap again to attack.' : '.');
     } else if (kind === 'claim') {
       st.textContent = rnd + (confirmMoves() && selected === i ? 'Tap again to take this cell.' : 'Take this cell.');
@@ -323,6 +323,7 @@
     if (!kind) { selected = -1; refresh(); return; }
     if (confirmMoves() && selected !== i) { selected = i; refresh(); return; }
     selected = -1;
+    if (kind === 'attack' && G.previewAttack(game, i, game.turn).result === 'fail') return passTurn(i);
     doMove(i);
   }
 
@@ -362,8 +363,10 @@
     });
     if (v && game && game.status === 'playing' && game.turn === p) { G.retire(game, p); finish(); }
   }
-  async function passTurn() {
+  // via: index of a pointless attack, which counts as a pass; otherwise the Pass button
+  async function passTurn(via) {
     if (!humanTurn()) return;
+    via = typeof via === 'number' ? via : -1;
     const p = game.turn;
     const out = G.passOutcome(game);
     const op = game.players[1 - p].name;
@@ -378,7 +381,7 @@
       if (!v || !humanTurn() || game.turn !== p) return;
     }
     selected = -1;
-    const ev = G.pass(game);
+    const ev = via >= 0 ? G.play(game, via) : G.pass(game);
     if (ev.ok) afterMove(ev, p);
   }
   function maybeCpu() {
@@ -396,7 +399,10 @@
   function report(ev) {
     const pl = game.players[ev.p];
     const name = pl.name === 'You' ? 'You' : pl.name;
-    if (ev.kind === 'pass') { UI.toast(`${name} passed.`, pl.color); return; }
+    if (ev.kind === 'pass') {
+      UI.toast(ev.futile ? `${name} attacked with damage ${ev.dmg}. That changes nothing, so it counts as a pass.` : `${name} passed.`, pl.color);
+      return;
+    }
     const found = name === 'You' ? 'found' : 'found';
     ev.items.forEach(it => UI.toast(`${name} ${found} ${UI.itemText(it)}${it.type.startsWith('atk') ? ` (attack ${pl.atk})` : it.type.startsWith('def') ? ` (defense ${pl.def})` : ''}.`, pl.color));
     if (ev.kind === 'attack') {
