@@ -28,13 +28,10 @@
       if (ev.end && ev.end.winner === p) s += 1e6;
       const gained = G.score(sim)[p] - before;
       s += gained * 6;
-      if (ev.end && ev.end.winner === o) s -= 1e6;
-      if (ev.kind === 'pass') {
-        // a pointless attack counts as a pass: only when nothing better is left
-        s -= 60;
-      } else if (m.kind === 'attack') {
+      if (m.kind === 'attack') {
         if (ev.result === 'capture') s += 20;
         else if (ev.result === 'wall') s += 4;
+        else s -= 40; // would not do anything
       }
       // head for the other base
       s += (maxD - G.dist(state, m.idx, theirBase)) * 1.5;

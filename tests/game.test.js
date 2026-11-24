@@ -42,8 +42,7 @@ test('attack: capture only when damage > 0, and the turn is used either way', ()
   const target = G.nbrs(s, b)[0];
   s.cells[target].owner = 1;
   let ev = G.play(s, target);
-  assert.equal(ev.result, 'pass'); assert.ok(ev.futile); assert.equal(s.cells[target].owner, 1); assert.equal(s.turn, 1);
-  assert.equal(s.passes[0], 1); // a pointless attack counts as a pass
+  assert.equal(ev.result, 'fail'); assert.equal(s.cells[target].owner, 1); assert.equal(s.turn, 1);
   s.turn = 0; s.players[0].atk = 3;
   ev = G.play(s, target);
   assert.equal(ev.result, 'capture'); assert.equal(s.cells[target].owner, 0);
@@ -118,7 +117,6 @@ test('full board with no capture for 4 moves: more cells wins, equal is a draw',
     return s;
   };
   const s = mk(1);
-  s.cells.forEach(c => { c.walls = 9; }); s.players[0].atk = 2; s.players[1].atk = 2; // hits only break walls
   const atk = () => G.legalMoves(s, s.turn)[0].idx;
   for (let k = 0; k < 4; k++) G.play(s, atk());
   const n = G.score(s);
@@ -128,7 +126,7 @@ test('full board with no capture for 4 moves: more cells wins, equal is a draw',
   t.cells.forEach(c => { if (c.r === 0) c.owner = c.q < 0 ? 0 : c.q > 0 ? 1 : c.owner; });
   t.cells[at(t, 0, 0)].owner = 0; t.cells[at(t, 4, 0)].owner = 1;
   const nt = G.score(t);
-  if (nt[0] === nt[1]) { for (let k = 0; k < 2; k++) G.play(t, G.legalMoves(t, t.turn)[0].idx); assert.equal(t.status, 'draw'); assert.equal(t.reason, 'passes'); }
+  if (nt[0] === nt[1]) { for (let k = 0; k < 4; k++) G.play(t, G.legalMoves(t, t.turn)[0].idx); assert.equal(t.status, 'draw'); }
 });
 test('retire gives the win to the other player', () => {
   const s = blank(); G.retire(s, 0); assert.equal(s.winner, 1);

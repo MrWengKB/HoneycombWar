@@ -284,11 +284,6 @@
     const p = state.turn;
     const kind = moveKind(state, i, p);
     if (!kind) return { ok: false };
-    // An attack that can't do any damage changes nothing, so it counts as a pass.
-    if (kind === 'attack' && damage(state, p) <= 0) {
-      const pv = pass(state);
-      return Object.assign(pv, { idx: i, futile: true, dmg: damage(state, p) });
-    }
     const ev = { ok: true, p, idx: i, kind, result: kind, dmg: 0, changed: [], items: [], enclosed: 0, captured: false };
     const fullBefore = emptyCount(state) === 0;
 
