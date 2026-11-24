@@ -235,7 +235,8 @@ test('centre base: claimable from round 3, gives +1/+1, taken only by surroundin
   assert.equal(s.cells[h].owner, 1);
   assert.equal(G.def(s, 1), 2); assert.equal(G.def(s, 0), 1);
   const lv = G.createGame({ level: 9, seed: 2 }); lv.cells[lv.hive].owner = 0;
-  assert.equal(G.def(lv, 0), 18); // level 9: +9 defense
+  assert.equal(G.def(lv, 0), 15); // level 9: +6 defense
+  assert.deepEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 40].map(G.hiveBonusFor), [1, 2, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 8]);
 });
 test('an area holding the opponent centre base is not enclosed', () => {
   const s = blank();

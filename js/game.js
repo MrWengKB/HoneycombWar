@@ -19,7 +19,14 @@
   const BASE_DEFENSE = 1;  // starting defense = BASE_DEFENSE × level
   const DRAW_MOVES = 4;
   const HIVE_ROUND = 3;     // the centre cell can be claimed from this round on
-  // While you hold the centre: +defense equal to the level (friend games: the starting strength)    // 2 rounds with a full board and no capture
+  // While you hold the centre: +defense by level (friend games: by the starting strength).
+  // Levels 1-4: the level; 5-6: level-1; 7-8: level-2; 9-10: level-3; 11-12: level-4; then 8.
+  function hiveBonusFor(level) {
+    const L = Math.max(1, level);
+    if (L <= 4) return L;
+    if (L <= 12) return L - Math.ceil((L - 4) / 2);
+    return 8;
+  }    // 2 rounds with a full board and no capture
 
   /* ---------- seeded random numbers, so a saved game continues the same way ---------- */
   function rng(state) {
@@ -125,7 +132,7 @@
     // The centre "hive": a second base for whoever takes it. It can't be attacked, only surrounded.
     state.hive = indexOf(state, 0, 0);
     state.cells[state.hive].hive = true;
-    state.hiveBonus = strength;
+    state.hiveBonus = hiveBonusFor(strength);
 
     // Hidden items
     const types = ITEM_SETS[state.itemSet] || ITEM_TYPES;
@@ -162,7 +169,7 @@
   function hiveOpen(state) { return round(state) >= HIVE_ROUND; }
   function hiveOwner(state) { return state.hive >= 0 && state.hive !== undefined ? state.cells[state.hive].owner : -1; }
   // Attack and defense including the centre bonus
-  function hiveBonus(state) { return state.hiveBonus || state.level || 1; }
+  function hiveBonus(state) { return state.hiveBonus || hiveBonusFor(state.level || 1); }
   function atk(state, p) { return state.players[p].atk; }
   function def(state, p) { return state.players[p].def + (hiveOwner(state) === p ? hiveBonus(state) : 0); }
   function maxRounds(state) { return state.maxRounds || 3 * state.cells.length; }
@@ -439,7 +446,7 @@
   }
 
   root.HexGame = {
-    HIVE_ROUND, hiveBonus, hiveOpen, hiveOwner, atk, def,
+    HIVE_ROUND, hiveBonus, hiveBonusFor, hiveOpen, hiveOwner, atk, def,
     DIRS, ITEM_TYPES, ITEM_SETS, MIN_SIDE, MAX_SIDE, DRAW_MOVES,
     sideForLevel, cellCount, maxItems, itemsForLevel, levelInfo,
     createGame, restore, clone, nbrs, indexOf, legalMoves, moveKind, previewAttack, damage,
