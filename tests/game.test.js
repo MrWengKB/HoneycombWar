@@ -190,4 +190,27 @@ test('hopeless: no grey cells, no damage, and the opponent can capture', () => {
   s.players[0].atk = 3; s.players[1].def = 2;
   assert.equal(G.hopeless(s, 0), false); // we can hit back
 });
+test('pass: twice in a row while the opponent plays loses', () => {
+  const s = blank();
+  G.pass(s); assert.equal(s.turn, 1);
+  G.play(s, G.legalMoves(s, 1)[0].idx);
+  assert.equal(G.passOutcome(s), 'lose');
+  const ev = G.pass(s);
+  assert.equal(s.winner, 1); assert.equal(ev.end.reason, 'forfeit');
+});
+test('pass: a pass after a move resets the count', () => {
+  const s = blank();
+  G.pass(s); G.play(s, G.legalMoves(s, 1)[0].idx);
+  G.play(s, G.legalMoves(s, 0)[0].idx); G.play(s, G.legalMoves(s, 1)[0].idx);
+  assert.equal(G.passOutcome(s), 'ok');
+  G.pass(s); assert.equal(s.status, 'playing');
+});
+test('pass: both players passing ends on cell count', () => {
+  const s = blank();
+  G.play(s, G.legalMoves(s, 0)[0].idx);
+  G.pass(s);
+  assert.equal(G.passOutcome(s), 'count');
+  const ev = G.pass(s);
+  assert.equal(ev.end.reason, 'passes'); assert.equal(s.winner, 0); // 2 cells vs 1
+});
 console.log(`\n${n} tests passed`);

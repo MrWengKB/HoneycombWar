@@ -277,6 +277,7 @@
     return { p: game.turn, moves };
   }
   function refresh() {
+    $('#gPass').disabled = !humanTurn();
     board.update(hint(), selected);
     renderPanels();
     setStatus(selected);
@@ -329,6 +330,9 @@
     const p = game.turn;
     const ev = G.play(game, i);
     if (!ev.ok) return;
+    afterMove(ev, p);
+  }
+  async function afterMove(ev, p) {
     report(ev);
     board.update(null, -1);
     board.flash(ev.changed);
@@ -358,6 +362,25 @@
     });
     if (v && game && game.status === 'playing' && game.turn === p) { G.retire(game, p); finish(); }
   }
+  async function passTurn() {
+    if (!humanTurn()) return;
+    const p = game.turn;
+    const out = G.passOutcome(game);
+    const op = game.players[1 - p].name;
+    const opp = op === 'CPU' ? 'the CPU' : op;
+    const dlg = {
+      lose: { icon: '⚠️', title: 'Pass again?', body: `You passed last turn. Passing twice in a row while ${opp} keeps playing loses the game.`, label: 'Pass and lose' },
+      count: { icon: '⚖️', title: 'End the game?', body: `${opp[0].toUpperCase() + opp.slice(1)} just passed. If you pass too, the game ends and the player with more cells wins.`, label: 'Pass and count cells' },
+      ok: confirmMoves() ? { title: 'Pass this turn?', body: 'Passing twice in a row while the other player keeps playing loses the game.', label: 'Pass' } : null
+    }[out];
+    if (dlg) {
+      const v = await UI.dialog({ icon: dlg.icon, title: dlg.title, body: dlg.body, buttons: [{ label: 'Cancel', value: false, kind: 'ghost' }, { label: dlg.label, value: true, kind: out === 'ok' ? 'primary' : 'danger' }] });
+      if (!v || !humanTurn() || game.turn !== p) return;
+    }
+    selected = -1;
+    const ev = G.pass(game);
+    if (ev.ok) afterMove(ev, p);
+  }
   function maybeCpu() {
     if (!game || game.status !== 'playing' || !game.players[game.turn].cpu) return;
     busy = true;
@@ -373,6 +396,7 @@
   function report(ev) {
     const pl = game.players[ev.p];
     const name = pl.name === 'You' ? 'You' : pl.name;
+    if (ev.kind === 'pass') { UI.toast(`${name} passed.`, pl.color); return; }
     const found = name === 'You' ? 'found' : 'found';
     ev.items.forEach(it => UI.toast(`${name} ${found} ${UI.itemText(it)}${it.type.startsWith('atk') ? ` (attack ${pl.atk})` : it.type.startsWith('def') ? ` (defense ${pl.def})` : ''}.`, pl.color));
     if (ev.kind === 'attack') {
@@ -411,6 +435,8 @@
     const why = {
       surround: 'The base was surrounded.',
       retire: 'Retired.',
+      forfeit: `${g.players[1 - g.winner] ? g.players[1 - g.winner].name : ''} passed twice in a row.`,
+      passes: `Both players passed. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`,
       stalemate: `The board is full and nobody captured anything for 2 rounds. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`,
       limit: `The round limit (${G.maxRounds(g)} rounds) was reached. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`,
       stuck: `Nobody can move. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`
@@ -469,6 +495,7 @@
     $$('[data-back]').forEach(b => b.addEventListener('click', () => { renderMenu(); show('menu'); }));
     $('#gMenu').addEventListener('click', () => { game = null; renderMenu(); show('menu'); });
     $('#gRetire').addEventListener('click', retireGame);
+    $('#gPass').addEventListener('click', passTurn);
     $('#gZoomIn').addEventListener('click', () => board && board.setZoom(board.zoom * 1.4));
     $('#gZoomOut').addEventListener('click', () => board && board.setZoom(board.zoom / 1.4));
     $('#optConfirm').addEventListener('change', e => { prefs().confirm = e.target.checked; window.Store.save(); });

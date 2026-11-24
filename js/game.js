@@ -316,6 +316,9 @@
 
     state.moves++;
     state.last = { p, idx: i, kind, result: ev.result, changed: ev.changed.slice() };
+    state.passes = state.passes || [0, 0];
+    state.passes[p] = 0;
+    state.lastPass = -1;
 
     // End of game?
     if (surrounded(state, 1 - p)) {
@@ -339,6 +342,40 @@
     }
     if (state.status !== 'playing') ev.end = { status: state.status, winner: state.winner, reason: state.reason };
     return ev;
+  }
+
+  /*
+   * The player to move passes. Passing twice in a row while the opponent keeps playing loses;
+   * when both players pass one after the other, the game ends on cell count.
+   */
+  function pass(state) {
+    if (state.status !== 'playing') return { ok: false };
+    const p = state.turn;
+    const ev = { ok: true, p, idx: -1, kind: 'pass', result: 'pass', changed: [], items: [], enclosed: 0, captured: false };
+    state.passes = state.passes || [0, 0];
+    const bothPassed = state.lastPass === 1 - p;
+    state.passes[p]++;
+    state.lastPass = p;
+    state.moves++;
+    state.guard = null;
+    state.last = { p, idx: -1, kind: 'pass', result: 'pass', changed: [] };
+    if (bothPassed) endByCount(state, 'passes');
+    else if (state.passes[p] >= 2) endGame(state, 1 - p, 'forfeit');
+    else {
+      if (emptyCount(state) === 0) state.quiet++;
+      if (state.quiet >= DRAW_MOVES) endByCount(state, 'stalemate');
+      else if (state.moves >= 2 * maxRounds(state)) endByCount(state, 'limit');
+      else state.turn = 1 - p;
+    }
+    if (state.status !== 'playing') ev.end = { status: state.status, winner: state.winner, reason: state.reason };
+    return ev;
+  }
+  // What passing now would do: 'ok' | 'lose' (second pass in a row) | 'count' (opponent just passed)
+  function passOutcome(state) {
+    const p = state.turn;
+    if (state.lastPass === 1 - p) return 'count';
+    if (state.passes && state.passes[p] >= 1) return 'lose';
+    return 'ok';
   }
 
   function endGame(state, winner, reason) {
@@ -385,6 +422,6 @@
     DIRS, ITEM_TYPES, ITEM_SETS, MIN_SIDE, MAX_SIDE, DRAW_MOVES,
     sideForLevel, cellCount, maxItems, itemsForLevel, levelInfo,
     createGame, restore, clone, nbrs, indexOf, legalMoves, moveKind, previewAttack, damage,
-    play, retire, score, guarded, hopeless, maxRounds, round, emptyCount, surrounded, enclosedAreas, dist
+    play, pass, passOutcome, retire, score, guarded, hopeless, maxRounds, round, emptyCount, surrounded, enclosedAreas, dist
   };
 })(typeof window !== 'undefined' ? window : globalThis);

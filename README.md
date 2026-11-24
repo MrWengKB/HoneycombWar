@@ -13,6 +13,7 @@ A turn-based strategy game on a honeycomb board, played in the browser: https://
 - Walls: any hit with damage ≥ 1 removes exactly one layer per turn; a walled cell can't be captured until its wall is gone.
 - Enclosing an area with your cells (the board edge counts) takes the whole area. Rings and enclosures also take opponent cells without walls, unless the opponent's defense is greater than your attack.
 - All of a player's cells share one attack and one defense.
+- Pass: a player may pass instead of moving. Passing twice in a row while the opponent keeps playing loses; if both players pass one after the other, the game ends on cell count.
 - Win by surrounding the opponent's base. Retiring gives the win to the opponent.
 - When the board is full and nobody captures for 2 rounds (4 moves), the player with more cells wins; equal cells is a draw.
 - Round limit: 3 × the number of cells. When it is reached, most cells wins (equal is a draw).
