@@ -141,7 +141,18 @@
   }
 
   /* ---------- toasts and dialogs ---------- */
+  // During a game, messages go in the strip under the board (it never covers the board).
   function toast(text, color) {
+    const feed = $('#feed');
+    if (feed && document.body.classList.contains('ingame')) {
+      const line = document.createElement('div');
+      line.className = 'fline';
+      if (color) line.style.setProperty('--fc', color);
+      line.textContent = text;
+      feed.prepend(line);
+      while (feed.children.length > 2) feed.lastChild.remove();
+      return;
+    }
     const box = $('#toasts');
     const t = document.createElement('div');
     t.className = 'toast';
@@ -187,5 +198,7 @@
     });
   }
 
-  window.UI = { Board, toast, dialog, itemText, itemLabel, mix, EMPTY };
+  function clearFeed() { const f = $('#feed'); if (f) f.innerHTML = ''; }
+
+  window.UI = { clearFeed, Board, toast, dialog, itemText, itemLabel, mix, EMPTY };
 })();

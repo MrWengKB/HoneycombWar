@@ -262,6 +262,7 @@
       board.onHover = i => setStatus(i);
     }
     board.zoom = 1;
+    UI.clearFeed();
     board.build(game);
     refresh();
     maybeCpu();
