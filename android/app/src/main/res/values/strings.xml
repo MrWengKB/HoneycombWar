@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Honeycomb War</string>
+    <string name="ad_loading">Loading ad… Thank you for your support!</string>
+    <string name="ad_thanks">Thank you for supporting Honeycomb War!</string>
+    <string name="ad_unavailable">No ad is available right now. Please try again later.</string>
+</resources>

@@ -33,6 +33,6 @@
   ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => { if (on && (!el || el.paused)) start(); }, { capture: true }));
   document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
 
-  window.Music = { setOn, start, get on() { return on; } };
+  window.Music = { setOn, start, pause: stop, get on() { return on; } };
   start();
 })();

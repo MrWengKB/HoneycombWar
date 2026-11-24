@@ -65,7 +65,7 @@
     const p = profile();
     const info = G.levelInfo(p.level);
     const user = window.Store.mode() === 'google' ? window.Auth.current() : null;
-    $('#who').textContent = user ? 'Signed in as ' + (user.name || user.email) : 'Playing without signing in';
+    $('#who').textContent = user ? 'Signed in as ' + (user.name || user.email) : window.HWApp ? 'Progress is saved on this phone' : 'Playing without signing in';
     $('#mLevel').textContent = p.level;
     $('#mLevelInfo').innerHTML = '';
     [['Board', `${info.side} cells per side`], ['Hidden items', info.items], ['Start attack / defense', `${info.attack} / ${info.defense}`]]
@@ -75,7 +75,7 @@
     $('#btnContinue').hidden = !(p.current && p.current.status === 'playing');
     if (p.current) $('#btnContinue').textContent = p.current.mode === 'cpu' ? 'Continue game vs CPU' : 'Continue friend game';
     $('#optConfirm').checked = prefs().confirm != null ? prefs().confirm : matchMedia('(pointer: coarse)').matches;
-    $('#ver').textContent = 'v' + cfg.version;
+    $('#ver').textContent = 'v' + cfg.version + (window.HWApp ? ' · Android app' : '');
     renderSync();
   }
   function renderSync() {
@@ -557,8 +557,32 @@
     initSegs();
   }
 
+  // Android app (window.HWApp from the app): play on this device, no Google sign-in
+  const inApp = !!window.HWApp;
+  function wireApp() {
+    if (!inApp) return;
+    document.body.classList.add('in-app');
+    $('#btnSupport').addEventListener('click', () => window.HWApp.support());
+    $('#btnUpdates').addEventListener('click', () => window.HWApp.checkUpdates());
+    // Back button: close a dialog, or go back to the menu; false lets the app close
+    window.hwBack = () => {
+      const modals = document.querySelectorAll('.modal');
+      if (modals.length) {
+        const m = modals[modals.length - 1];
+        const b = m.querySelector('.btn.ghost') || m.querySelector('.btn');
+        if (b) b.click(); else m.remove();
+        return true;
+      }
+      if (!$('#game').hidden) { $('#gMenu').click(); return true; }
+      if (!$('#setupCpu').hidden || !$('#setupFriend').hidden) { renderMenu(); show('menu'); return true; }
+      return false;
+    };
+  }
+
   async function boot() {
     wire();
+    wireApp();
+    if (inApp && window.Store.mode() !== 'guest') window.Store.setMode('guest');
     const mode = window.Store.mode();
     if (mode === 'guest' || (mode === 'google' && window.Auth.current())) await enterMenu();
     else show('welcome');

@@ -1,0 +1,66 @@
+name: Build Android APK
+
+# Same as HanziQuery: add a new "# vX.Y.Z" section at the top of version-history.md and push to main.
+# This builds the APK (with the current web game inside) and publishes it as the "apk-latest" release.
+# The app's "Check for updates" reads that release.
+on:
+  push:
+    branches: [main]
+    paths:
+      - version-history.md
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: android-release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Run the rules tests
+        run: node tests/game.test.js
+
+      - name: Build APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk HoneycombWar.apk
+
+      - name: Save as build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HoneycombWar-apk
+          path: HoneycombWar.apk
+
+      - name: Publish to Releases (download straight to a phone)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The newest section of version-history.md becomes the release notes; the app's update prompt shows it
+          awk '/^[[:space:]]*#/{n++} n==1' version-history.md > latest-notes.md
+          VERSION=$(grep -oE '[vV][0-9]+(\.[0-9]+)*' latest-notes.md | head -1)
+          {
+            echo "Build ${{ github.run_number }}. Download HoneycombWar.apk and open it to install. The game plays offline."
+            echo
+            cat latest-notes.md
+          } > release-notes.md
+
+          gh release delete apk-latest --cleanup-tag -y || true
+          gh release create apk-latest HoneycombWar.apk \
+            --title "Honeycomb War ${VERSION:-(latest)}" \
+            --notes-file release-notes.md \
+            --latest

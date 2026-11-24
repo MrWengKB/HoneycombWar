@@ -35,6 +35,16 @@ Optional Google sign-in (same OAuth client as Class Manager, `drive.file` scope)
 
 “New Sunrise” from OpenGameArt.org, https://opengameart.org/content/new-sunrise. License: CC0 1.0 Universal (public domain), https://creativecommons.org/publicdomain/zero/1.0/. It's the same track used in [ELAdventure](https://github.com/MrWengKB/ELAdventure). Players turn it on with the “Play background music” tickbox on the main menu (off by default). Credits are also shown in the game under “Music credits”.
 
+## Android app
+
+`android/` wraps the web game in an offline Android app, built the same way as HanziQuery: the web files are copied into the APK's assets and loaded with `WebViewAssetLoader`.
+
+- **Release:** add a new `# vX.Y.Z` section at the top of `version-history.md` and push to main. GitHub Actions (`.github/workflows/build-android.yml`) runs the tests, builds the APK and publishes it as the `apk-latest` release (download: https://github.com/MrWengKB/HoneycombWar/releases/tag/apk-latest).
+- **Updates:** the app checks `apk-latest` when it starts (and from "Check for updates" in the menu) and offers Install, Later or Ignore.
+- **Support the author:** a menu button shows one rewarded AdMob ad. `android/app/src/main/res/values/admob.xml` still has Google's test IDs; replace them with Honeycomb War's own AdMob app and rewarded unit IDs.
+- **Signing:** a fixed key in `android/app/honeycombwar.keystore` (like HanziQuery), so every build installs over the previous one.
+- Google sign-in is not available in the app (Google blocks it inside app web views); progress is saved on the phone.
+
 ## Files
 
 - `index.html`, `style.css`

@@ -167,3 +167,8 @@ body.face #panel1 { transform: rotate(180deg); }
 .panel .hivetag { font-size: .8rem; font-weight: 700; color: var(--accent-ink); background: var(--accent); border-radius: 6px; padding: 0 6px; }
 @media (max-width: 420px) { .toolbar { gap: 5px; flex-wrap: nowrap; } .toolbar .btn.small { padding: 6px 9px; min-width: 0; } }
 .credits { text-align: left; font-size: .93rem; } .credits p { color: var(--ink); } .credits a { color: inherit; }
+/* Android app: no Google sign-in there; support and update buttons only there */
+.app-only { display: none !important; }
+body.in-app .app-only { display: inline-flex !important; }
+body.in-app span.app-only { display: inline !important; }
+body.in-app .web-only { display: none !important; }
