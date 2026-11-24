@@ -35,6 +35,6 @@ Optional Google sign-in (same OAuth client as Class Manager, `drive.file` scope)
 
 - `index.html`, `style.css`
 - `js/game.js` rules engine (also runs in Node), `js/cpu.js` CPU player
-- `js/ui.js` board drawing and dialogs, `js/main.js` screens and game flow
+- `js/sound.js` sound effects (Web Audio, no files), `js/ui.js` board drawing and dialogs, `js/main.js` screens and game flow
 - `js/auth.js` Google sign-in, `js/drive.js` Drive file, `js/crypto.js` encryption, `js/store.js` profile
 - `tests/game.test.js`: `node tests/game.test.js`

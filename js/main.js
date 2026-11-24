@@ -401,6 +401,7 @@
   function report(ev) {
     const pl = game.players[ev.p];
     const name = pl.name === 'You' ? 'You' : pl.name;
+    sounds(ev);
     if (ev.kind === 'pass') { UI.toast(`${name} passed.`, pl.color); return; }
     const found = name === 'You' ? 'found' : 'found';
     ev.items.forEach(it => UI.toast(`${name} ${found} ${UI.itemText(it)}${it.type.startsWith('atk') ? ` (attack ${G.atk(game, ev.p)})` : it.type.startsWith('def') ? ` (defense ${G.def(game, ev.p)})` : ''}.`, pl.color));
@@ -412,6 +413,22 @@
     (ev.lost || []).forEach(l => UI.toast(`${game.players[l.p].name} lost a captured cell's +${l.value} ${l.type === 'atk+' ? 'attack' : 'defense'}.`, game.players[l.p].color));
     if (ev.hive) UI.toast(ev.hiveTaken ? `${name} surrounded and took the centre base! (+${G.hiveBonus(game)} defense)` : `${name} claimed the centre base! (+${G.hiveBonus(game)} defense)`, pl.color);
     if (ev.enclosed) UI.toast(`${name} enclosed an area and took ${ev.enclosed} cell${ev.enclosed > 1 ? 's' : ''}!`, pl.color);
+  }
+
+  // The sounds for one move, played one after another
+  function sounds(ev) {
+    const list = [];
+    if (ev.kind === 'pass') list.push('pass');
+    else if (ev.kind === 'claim') list.push('ding');
+    else if (ev.result === 'capture') list.push('clash');
+    else if (ev.result === 'wall') list.push('wall');
+    else list.push('bonk');
+    ev.items.forEach(it => list.push(it.type === 'atk-' || it.type === 'def-' ? 'uhoh' : it.type === 'ring' ? 'ring' : 'happy'));
+    if (ev.enclosed) list.push('enclose');
+    if (ev.taken && ev.kind !== 'attack') list.push('clash'); // enemy cells taken by a ring or an enclosure
+    if (ev.hive) list.push('happy');
+    if ((ev.lost || []).length) list.push('uhoh');
+    window.Sound.play(list.slice(0, 5));
   }
 
   async function persist() {
@@ -447,6 +464,8 @@
       limit: `The round limit (${G.maxRounds(g)} rounds) was reached. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`,
       stuck: `Nobody can move. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`
     }[g.reason] || '';
+    const delay = 0.6;
+    setTimeout(() => window.Sound.play(g.status === 'draw' ? 'draw' : g.mode === 'cpu' && g.winner === 1 ? 'lose' : 'win'), delay * 1000);
     let title, icon;
     if (g.status === 'draw') { title = 'Draw'; icon = '🤝'; }
     else if (g.mode === 'cpu') { title = g.winner === 0 ? 'You win!' : 'The CPU wins'; icon = g.winner === 0 ? '🏆' : '🐝'; }
@@ -502,6 +521,10 @@
     $('#gMenu').addEventListener('click', () => { game = null; renderMenu(); show('menu'); });
     $('#gRetire').addEventListener('click', retireGame);
     $('#gPass').addEventListener('click', passTurn);
+    const snd = $('#gSound');
+    const showSnd = () => { snd.textContent = window.Sound.on ? '🔊' : '🔇'; snd.setAttribute('aria-label', window.Sound.on ? 'Sound on' : 'Sound off'); snd.title = snd.getAttribute('aria-label'); };
+    snd.addEventListener('click', () => { window.Sound.setOn(!window.Sound.on); showSnd(); });
+    showSnd();
     $('#gZoomIn').addEventListener('click', () => board && board.setZoom(board.zoom * 1.4));
     $('#gZoomOut').addEventListener('click', () => board && board.setZoom(board.zoom / 1.4));
     $('#optConfirm').addEventListener('change', e => { prefs().confirm = e.target.checked; window.Store.save(); });
