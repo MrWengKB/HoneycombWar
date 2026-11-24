@@ -105,6 +105,7 @@
       winner: -1,
       reason: '',
       last: null,        // { p, idx, kind, changed: [indices] }
+      guard: null,       // { by, cells }: cells just captured by `by`, safe from recapture for one turn
       startedAt: Date.now()
     };
     for (let r = -R; r <= R; r++) {
@@ -132,6 +133,7 @@
       state.cells[free[k]].item = { type, value };
     }
     state.itemCount = want;
+    state.maxRounds = 3 * state.cells.length;
     return state;
   }
 
@@ -143,8 +145,36 @@
     const c = state.cells[i];
     if (!c || state.status !== 'playing') return null;
     if (c.owner === -1) return touches(state, i, p) ? 'claim' : null;
-    if (c.owner === 1 - p && c.base === undefined) return touches(state, i, p) ? 'attack' : null;
+    if (c.owner === 1 - p && c.base === undefined && !guarded(state, i, p)) return touches(state, i, p) ? 'attack' : null;
     return null;
+  }
+  // A cell captured on the opponent's last move can't be taken back straight away.
+  function guarded(state, i, p) {
+    const g = state.guard;
+    return !!(g && g.by === 1 - p && g.cells.indexOf(i) !== -1);
+  }
+  function maxRounds(state) { return state.maxRounds || 3 * state.cells.length; }
+  function round(state) { return Math.floor(state.moves / 2) + 1; }
+  // A cell changes hands to p. If it held a boost (+attack/+defense) found by the old owner,
+  // the old owner loses that boost for good. Deductions stay with whoever found them.
+  function takeOver(state, k, p, ev) {
+    const c = state.cells[k];
+    const old = c.owner;
+    c.owner = p;
+    ev.changed.push(k);
+    if (old !== 1 - p) return;
+    ev.taken = (ev.taken || 0) + 1;
+    ev.takenCells = ev.takenCells || [];
+    ev.takenCells.push(k);
+    const it = c.item;
+    if (it && c.seen && !it.lost && it.by === old && (it.type === 'atk+' || it.type === 'def+')) {
+      it.lost = true;
+      const pl = state.players[old];
+      if (it.type === 'atk+') pl.atk = Math.max(0, pl.atk - it.value);
+      else pl.def = Math.max(0, pl.def - it.value);
+      ev.lost = ev.lost || [];
+      ev.lost.push({ idx: k, type: it.type, value: it.value, p: old });
+    }
   }
   function legalMoves(state, p) {
     const out = [];
@@ -172,7 +202,7 @@
   function sweepable(state, k, p, strong) {
     const c = state.cells[k];
     if (c.owner === -1) return true;
-    return strong && c.owner === 1 - p && c.base === undefined && c.walls === 0;
+    return strong && c.owner === 1 - p && c.base === undefined && c.walls === 0 && !guarded(state, k, p);
   }
 
   // Occupy a cell for p and use its hidden item. Rings found by a ring also go off.
@@ -181,14 +211,11 @@
     while (queue.length) {
       const k = queue.shift();
       const c = state.cells[k];
-      if (c.owner !== p) {
-        if (c.owner === 1 - p) ev.taken = (ev.taken || 0) + 1;
-        c.owner = p;
-        ev.changed.push(k);
-      }
+      if (c.owner !== p) takeOver(state, k, p, ev);
       if (c.item && !c.seen) {
         c.seen = true;
         const it = c.item;
+        it.by = p;
         const pl = state.players[p];
         if (it.type === 'atk+') pl.atk += it.value;
         else if (it.type === 'atk-') pl.atk = Math.max(0, pl.atk - it.value);
@@ -265,9 +292,7 @@
         ev.wallsRemoved = removed;
         ev.wallsLeft = c.walls;
       } else if (pre.result === 'capture') {
-        c.owner = p;
-        ev.changed.push(i);
-        ev.captured = true;
+        takeOver(state, i, p, ev);
       }
     }
 
@@ -279,6 +304,7 @@
       }
     }
     if (ev.taken) ev.captured = true;
+    state.guard = ev.takenCells ? { by: p, cells: ev.takenCells.slice() } : null;
 
     state.moves++;
     state.last = { p, idx: i, kind, result: ev.result, changed: ev.changed.slice() };
@@ -293,7 +319,7 @@
       if (full && fullBefore) state.quiet = ev.captured ? 0 : state.quiet + 1;
       else state.quiet = 0;
       if (state.quiet >= DRAW_MOVES) endByCount(state, 'stalemate');
-      else if (state.moves > state.cells.length * 8) endByCount(state, 'limit');
+      else if (state.moves >= 2 * maxRounds(state)) endByCount(state, 'limit');
     }
 
     if (state.status === 'playing') {
@@ -351,6 +377,6 @@
     DIRS, ITEM_TYPES, ITEM_SETS, MIN_SIDE, MAX_SIDE, DRAW_MOVES,
     sideForLevel, cellCount, maxItems, itemsForLevel, levelInfo,
     createGame, restore, clone, nbrs, indexOf, legalMoves, moveKind, previewAttack, damage,
-    play, retire, score, emptyCount, surrounded, enclosedAreas, dist
+    play, retire, score, guarded, maxRounds, round, emptyCount, surrounded, enclosedAreas, dist
   };
 })(typeof window !== 'undefined' ? window : globalThis);

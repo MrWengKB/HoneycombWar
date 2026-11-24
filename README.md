@@ -7,12 +7,15 @@ A turn-based strategy game on a honeycomb board, played in the browser: https://
 - The board is a big hexagon of small hex cells. Each base sits in the middle of the second row from its player's edge (you at the bottom, the opponent at the top).
 - On your turn, take one grey cell next to your cells, or attack an opponent cell next to your cells. Every move uses the turn.
 - Attack: your attack − their defense = damage. Damage above 0 captures the cell. Bases can't be captured.
+- A cell captured this turn can't be recaptured on the opponent's very next turn.
+- If a cell where you found +attack or +defense is captured, you lose that boost for good. −attack and −defense you found stay with you.
 - Hidden items are revealed when a cell is taken: +attack, −attack, +defense, −defense (1–4 each), wall (1–2 layers on that cell) and ring (also take the 6 cells around it).
 - Walls: any hit with damage ≥ 1 removes exactly one layer per turn; a walled cell can't be captured until its wall is gone.
 - Enclosing an area with your cells (the board edge counts) takes the whole area. Rings and enclosures also take opponent cells without walls, unless the opponent's defense is greater than your attack.
 - All of a player's cells share one attack and one defense.
 - Win by surrounding the opponent's base. Retiring gives the win to the opponent.
 - When the board is full and nobody captures for 2 rounds (4 moves), the player with more cells wins; equal cells is a draw.
+- Round limit: 3 × the number of cells. When it is reached, most cells wins (equal is a draw).
 
 ## Levels (vs CPU)
 

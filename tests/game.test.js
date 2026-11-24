@@ -147,4 +147,37 @@ test('positive / negative item sets', () => {
   assert.ok(q.cells.filter(c => c.item).every(c => ['atk-', 'def-'].includes(c.item.type)));
   assert.equal(q.cells.filter(c => c.item).length, 40);
 });
+test('a cell just captured cannot be recaptured on the next turn', () => {
+  const s = blank();
+  const t = G.nbrs(s, s.bases[0])[0];
+  s.cells[t].owner = 1;
+  s.players[0].atk = 3; s.players[1].atk = 3;
+  G.play(s, t); assert.equal(s.cells[t].owner, 0);
+  assert.equal(G.moveKind(s, t, 1), null); // top may not take it back right away
+  const other = G.legalMoves(s, 1).find(m => m.kind === 'claim').idx;
+  G.play(s, other);
+  G.play(s, G.legalMoves(s, 0).find(m => m.kind === 'claim').idx);
+  assert.ok(G.moveKind(s, t, 1) === 'attack' || !G.nbrs(s, t).some(j => s.cells[j].owner === 1));
+});
+test('losing a cell loses its boost, but deductions stay', () => {
+  const s = blank();
+  const [a, b] = G.nbrs(s, s.bases[1]);
+  s.cells[a].item = { type: 'atk+', value: 3 };
+  s.cells[b].item = { type: 'def-', value: 1 };
+  s.turn = 1; G.play(s, a); assert.equal(s.players[1].atk, 4);
+  s.turn = 1; G.play(s, b); assert.equal(s.players[1].def, 0);
+  // bottom captures both cells
+  [a, b].forEach(x => { const f = G.nbrs(s, x).find(j => s.cells[j].owner === -1); s.cells[f].owner = 0; });
+  s.turn = 0; s.players[0].atk = 5; s.cells[a].walls = 0;
+  G.play(s, a); assert.equal(s.cells[a].owner, 0); assert.equal(s.players[1].atk, 1);
+  s.turn = 0; G.play(s, b); assert.equal(s.players[1].def, 0); // the −1 defense stays
+  assert.equal(s.players[0].atk, 5); // the capturer gains nothing
+});
+test('round limit is 3x the cell count, then most cells wins', () => {
+  const s = blank();
+  assert.equal(G.maxRounds(s), 183);
+  s.moves = 2 * 183 - 1;
+  G.play(s, G.legalMoves(s, s.turn)[0].idx);
+  assert.equal(s.reason, 'limit'); assert.notEqual(s.status, 'playing');
+});
 console.log(`\n${n} tests passed`);

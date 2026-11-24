@@ -299,18 +299,19 @@
     if (!game) return;
     if (game.status !== 'playing') { st.textContent = 'Game over'; return; }
     const pl = game.players[game.turn];
-    if (pl.cpu) { st.textContent = 'CPU is thinking…'; return; }
+    const rnd = `Round ${G.round(game)} of ${G.maxRounds(game)} · `;
+    if (pl.cpu) { st.textContent = rnd + 'CPU is thinking…'; return; }
     const kind = i >= 0 ? G.moveKind(game, i, game.turn) : null;
     if (kind === 'attack') {
       const pre = G.previewAttack(game, i, game.turn);
       const def = game.players[1 - game.turn].def;
       const tail = pre.result === 'capture' ? 'captures this cell' : pre.result === 'wall' ? 'breaks 1 wall layer' : 'does nothing';
-      st.textContent = `Attack ${pl.atk} − defense ${def} = ${pre.dmg}: ${tail}` + (confirmMoves() && selected === i ? '. Tap again to attack.' : '.');
+      st.textContent = rnd + `Attack ${pl.atk} − defense ${def} = ${pre.dmg}: ${tail}` + (confirmMoves() && selected === i ? '. Tap again to attack.' : '.');
     } else if (kind === 'claim') {
-      st.textContent = confirmMoves() && selected === i ? 'Tap again to take this cell.' : 'Take this cell.';
+      st.textContent = rnd + (confirmMoves() && selected === i ? 'Tap again to take this cell.' : 'Take this cell.');
     } else {
       const who = game.mode === 'friend' ? pl.name + ': ' : '';
-      st.textContent = who + 'take a grey cell next to yours, or attack an enemy cell next to yours.';
+      st.textContent = rnd + who + 'take a grey cell next to yours, or attack an enemy cell next to yours.';
     }
   }
 
@@ -359,6 +360,7 @@
       else if (ev.result === 'wall') UI.toast(`${name} broke 1 wall layer; ${ev.wallsLeft} left.`, pl.color);
       else UI.toast(`${name} attacked, but damage was ${ev.dmg}. Nothing happened.`, pl.color);
     }
+    (ev.lost || []).forEach(l => UI.toast(`${game.players[l.p].name} lost a captured cell's +${l.value} ${l.type === 'atk+' ? 'attack' : 'defense'}.`, game.players[l.p].color));
     if (ev.enclosed) UI.toast(`${name} enclosed an area and took ${ev.enclosed} cell${ev.enclosed > 1 ? 's' : ''}!`, pl.color);
   }
 
@@ -390,7 +392,7 @@
       surround: 'The base was surrounded.',
       retire: 'Retired.',
       stalemate: `The board is full and nobody captured anything for 2 rounds. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`,
-      limit: `The game went on too long. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`,
+      limit: `The round limit (${G.maxRounds(g)} rounds) was reached. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`,
       stuck: `Nobody can move. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`
     }[g.reason] || '';
     let title, icon;

@@ -7,7 +7,7 @@
   <meta name="description" content="A turn-based strategy game on a honeycomb board. Claim cells, find hidden items, and surround the enemy base.">
   <meta name="theme-color" content="#f5b301">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=1.0.1">
+  <link rel="stylesheet" href="style.css?v=1.1.0">
 </head>
 <body>
   <!-- Welcome -->
@@ -138,7 +138,7 @@
   <template id="howTpl">
     <div class="how">
       <p><b>Goal:</b> surround the enemy base. When all 6 cells around it are yours, you win.</p>
-      <p><b>Your turn:</b> take one grey cell next to your cells, or attack an enemy cell next to your cells. Every move uses your turn, even when the attack fails.</p>
+      <p><b>Your turn:</b> take one grey cell next to your cells, or attack an enemy cell next to your cells. Every move uses your turn, even when the attack fails. A cell captured from you can't be taken back on your very next turn.</p>
       <p><b>Attack:</b> your attack − their defense = damage. If the damage is more than 0, the cell becomes yours. Bases can't be captured.</p>
       <p><b>Walls:</b> any hit with damage of 1 or more removes 1 wall layer (one per turn). A walled cell can only be captured once no wall is left.</p>
       <p><b>Hidden items</b> are revealed when you take their cell:</p>
@@ -151,20 +151,20 @@
         <li><span class="ic ring">◎</span> ring: you also take the cells around it</li>
       </ul>
       <p><b>Enclose an area</b> with your cells (the board edge counts) and it all becomes yours. Rings and enclosures also take enemy cells without walls, unless the enemy's defense is greater than your attack.</p>
-      <p><b>All your cells share one attack and one defense</b>, shown in your panel.</p>
-      <p><b>End:</b> when the board is full and nobody captures anything for 2 rounds, the player with more cells wins. Equal cells is a draw. Retiring gives the win to the other player.</p>
+      <p><b>All your cells share one attack and one defense</b>, shown in your panel. If the enemy captures a cell where you found +attack or +defense, you lose that boost for good. A −attack or −defense you found stays with you.</p>
+      <p><b>End:</b> when the board is full and nobody captures anything for 2 rounds, the player with more cells wins. Equal cells is a draw. Each game also has a round limit of 3 × the number of cells (shown under the board); when it is reached, the player with more cells wins. Retiring gives the win to the other player.</p>
       <p><b>Levels:</b> win or draw against the CPU to level up. The board grows every 4 levels (up to 15 cells per side) and more items are hidden. Starting attack and defense equal your level.</p>
     </div>
   </template>
 
-  <script src="js/config.js?v=1.0.1"></script>
-  <script src="js/game.js?v=1.0.1"></script>
-  <script src="js/cpu.js?v=1.0.1"></script>
-  <script src="js/crypto.js?v=1.0.1"></script>
-  <script src="js/auth.js?v=1.0.1"></script>
-  <script src="js/drive.js?v=1.0.1"></script>
-  <script src="js/store.js?v=1.0.1"></script>
-  <script src="js/ui.js?v=1.0.1"></script>
-  <script src="js/main.js?v=1.0.1"></script>
+  <script src="js/config.js?v=1.1.0"></script>
+  <script src="js/game.js?v=1.1.0"></script>
+  <script src="js/cpu.js?v=1.1.0"></script>
+  <script src="js/crypto.js?v=1.1.0"></script>
+  <script src="js/auth.js?v=1.1.0"></script>
+  <script src="js/drive.js?v=1.1.0"></script>
+  <script src="js/store.js?v=1.1.0"></script>
+  <script src="js/ui.js?v=1.1.0"></script>
+  <script src="js/main.js?v=1.1.0"></script>
 </body>
 </html>
