@@ -162,3 +162,6 @@ body.face #panel1 { transform: rotate(180deg); }
 .page { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
 .page .card { max-width: none; }
 .btn:disabled { opacity: .45; cursor: default; }
+.cell .hivemark { fill: none; stroke: #f5b301; stroke-width: 2.4; pointer-events: none; }
+.cell .hivecore { fill: #f5b301; pointer-events: none; }
+.panel .hivetag { font-size: .8rem; font-weight: 700; color: var(--accent-ink); background: var(--accent); border-radius: 6px; padding: 0 6px; }

@@ -90,7 +90,7 @@ test('ring takes empty neighbours; enemy cells only if attack >= their defense a
 test('enclosed areas become yours, including weak unwalled enemy cells', () => {
   const s = blank();
   // ring of player-0 cells around (0,0)
-  const center = at(s, 0, 0);
+  const center = at(s, 1, 0);
   const ring = G.nbrs(s, center);
   ring.slice(1).forEach(i => { s.cells[i].owner = 0; });
   s.cells[center].owner = 1;
@@ -98,7 +98,7 @@ test('enclosed areas become yours, including weak unwalled enemy cells', () => {
   const ev = G.play(s, ring[0]);
   assert.equal(s.cells[center].owner, 0); assert.ok(ev.enclosed >= 1);
   // strong defense: enemy cell survives
-  const t = blank(); const ctr = at(t, 0, 0); const rg = G.nbrs(t, ctr);
+  const t = blank(); const ctr = at(t, 1, 0); const rg = G.nbrs(t, ctr);
   rg.slice(1).forEach(i => { t.cells[i].owner = 0; }); t.cells[ctr].owner = 1; t.players[1].def = 5;
   G.play(t, rg[0]); assert.equal(t.cells[ctr].owner, 1);
 });
@@ -113,6 +113,7 @@ test('surrounding the base wins', () => {
 test('full board with no capture for 4 moves: more cells wins, equal is a draw', () => {
   const mk = extra => {
     const s = blank();
+    s.hive = -1; // no centre bonus in this test
     s.cells.forEach((c, i) => { if (c.owner === -1) c.owner = c.r > 0 || (c.r === 0 && c.q < extra) ? 0 : 1; });
     return s;
   };
@@ -181,7 +182,7 @@ test('round limit is 3x the cell count, then most cells wins', () => {
   assert.equal(s.reason, 'limit'); assert.notEqual(s.status, 'playing');
 });
 test('hopeless: no grey cells, no damage, and the opponent can capture', () => {
-  const s = blank();
+  const s = blank(); s.hive = -1;
   s.cells.forEach(c => { if (c.owner === -1) c.owner = c.r > 0 ? 0 : 1; });
   assert.equal(G.hopeless(s, 0), false); // equal stats: nobody can capture
   s.players[1].atk = 3;
@@ -212,5 +213,38 @@ test('pass: both players passing ends on cell count', () => {
   assert.equal(G.passOutcome(s), 'count');
   const ev = G.pass(s);
   assert.equal(ev.end.reason, 'passes'); assert.equal(s.winner, 0); // 2 cells vs 1
+});
+test('centre base: claimable from round 3, gives +1/+1, taken only by surrounding', () => {
+  const s = blank();
+  const h = s.hive;
+  assert.equal(s.cells[h].q, 0); assert.equal(s.cells[h].r, 0); assert.ok(!s.cells[h].item);
+  const nb = G.nbrs(s, h);
+  s.cells[nb[0]].owner = 0;
+  assert.equal(G.moveKind(s, h, 0), null); // round 1: locked
+  s.moves = 4; // round 3
+  assert.equal(G.moveKind(s, h, 0), 'claim');
+  G.play(s, h);
+  assert.equal(G.atk(s, 0), 2); assert.equal(G.def(s, 0), 2); assert.equal(s.players[0].atk, 1);
+  // top can't attack it, even when stronger
+  nb.slice(1).forEach(j => { s.cells[j].owner = 1; });
+  s.players[1].atk = 9;
+  assert.equal(G.moveKind(s, h, 1), null);
+  // top surrounds it by capturing the last neighbour
+  s.turn = 1;
+  G.play(s, nb[0]);
+  assert.equal(s.cells[h].owner, 1);
+  assert.equal(G.atk(s, 1), 10); assert.equal(G.def(s, 0), 1);
+});
+test('an area holding the opponent centre base is not enclosed', () => {
+  const s = blank();
+  s.moves = 4;
+  const h = s.hive;
+  s.cells[h].owner = 1;
+  const ring = G.nbrs(s, h);
+  ring.slice(1).forEach(j => { s.cells[j].owner = 0; });
+  s.cells[ring[0]].owner = 1;
+  s.players[0].atk = 5;
+  G.play(s, ring[0]); // capture the last neighbour: surround, not enclosure
+  assert.equal(s.cells[h].owner, 0);
 });
 console.log(`\n${n} tests passed`);

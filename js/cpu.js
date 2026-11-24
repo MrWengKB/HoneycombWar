@@ -33,6 +33,8 @@
         else if (ev.result === 'wall') s += 4;
         else s -= 40; // would not do anything
       }
+      // the centre base: worth taking and worth surrounding
+      if (G.hiveOwner(sim) === p && G.hiveOwner(state) !== p) s += 30;
       // head for the other base
       s += (maxD - G.dist(state, m.idx, theirBase)) * 1.5;
       if (theirRing.has(m.idx)) s += 12;

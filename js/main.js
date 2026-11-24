@@ -290,8 +290,9 @@
       box.style.setProperty('--pc', pl.color);
       box.classList.toggle('active', game.status === 'playing' && game.turn === p);
       box.innerHTML = `<span class="dot"></span><span class="pname"></span>
-        <span class="stat" title="Attack"><i>⚔</i><b>${pl.atk}</b></span>
-        <span class="stat" title="Defense"><i>🛡</i><b>${pl.def}</b></span>
+        ${G.hiveOwner(game) === p ? '<span class="hivetag" title="Holds the centre base: +1 attack, +1 defense">⬡+1</span>' : ''}
+        <span class="stat" title="Attack"><i>⚔</i><b>${G.atk(game, p)}</b></span>
+        <span class="stat" title="Defense"><i>🛡</i><b>${G.def(game, p)}</b></span>
         <span class="stat" title="Cells"><i>⬢</i><b>${n[p]}</b></span>`;
       box.querySelector('.pname').textContent = pl.name + (game.status === 'playing' && game.turn === p ? (pl.cpu ? ' · thinking…' : ' · your turn') : '');
     });
@@ -306,11 +307,15 @@
     const kind = i >= 0 ? G.moveKind(game, i, game.turn) : null;
     if (kind === 'attack') {
       const pre = G.previewAttack(game, i, game.turn);
-      const def = game.players[1 - game.turn].def;
+      const def = G.def(game, 1 - game.turn);
       const tail = pre.result === 'capture' ? 'captures this cell' : pre.result === 'wall' ? 'breaks 1 wall layer' : 'does nothing';
-      st.textContent = rnd + `Attack ${pl.atk} − defense ${def} = ${pre.dmg}: ${tail}` + (confirmMoves() && selected === i ? '. Tap again to attack.' : '.');
+      st.textContent = rnd + `Attack ${G.atk(game, game.turn)} − defense ${def} = ${pre.dmg}: ${tail}` + (confirmMoves() && selected === i ? '. Tap again to attack.' : '.');
     } else if (kind === 'claim') {
       st.textContent = rnd + (confirmMoves() && selected === i ? 'Tap again to take this cell.' : 'Take this cell.');
+    } else if (i >= 0 && i === game.hive && game.cells[i].owner === -1 && !G.hiveOpen(game)) {
+      st.textContent = rnd + `The centre base can be claimed from round ${G.HIVE_ROUND}.`;
+    } else if (i >= 0 && i === game.hive && game.cells[i].owner === 1 - game.turn) {
+      st.textContent = rnd + 'The centre base can only be taken by surrounding it.';
     } else {
       const who = game.mode === 'friend' ? pl.name + ': ' : '';
       st.textContent = rnd + who + 'take a grey cell next to yours, or attack an enemy cell next to yours.';
@@ -357,7 +362,7 @@
     const v = await UI.dialog({
       icon: '🏳️',
       title: 'No way back',
-      body: `${who} are no grey cells left for you to take, and your attack (${pl.atk}) can't beat ${op.name === 'CPU' ? "the CPU's" : op.name + "'s"} defense (${op.def}), so you can't capture anything. Your cells can only be captured one by one. Retire now?`,
+      body: `${who} are no grey cells left for you to take, and your attack (${G.atk(game, p)}) can't beat ${op.name === 'CPU' ? "the CPU's" : op.name + "'s"} defense (${G.def(game, 1 - p)}), so you can't capture anything. Your cells can only be captured one by one. Retire now?`,
       buttons: [{ label: 'Keep playing', value: false, kind: 'ghost' }, { label: 'Retire', value: true, kind: 'danger' }]
     });
     if (v && game && game.status === 'playing' && game.turn === p) { G.retire(game, p); finish(); }
@@ -398,13 +403,14 @@
     const name = pl.name === 'You' ? 'You' : pl.name;
     if (ev.kind === 'pass') { UI.toast(`${name} passed.`, pl.color); return; }
     const found = name === 'You' ? 'found' : 'found';
-    ev.items.forEach(it => UI.toast(`${name} ${found} ${UI.itemText(it)}${it.type.startsWith('atk') ? ` (attack ${pl.atk})` : it.type.startsWith('def') ? ` (defense ${pl.def})` : ''}.`, pl.color));
+    ev.items.forEach(it => UI.toast(`${name} ${found} ${UI.itemText(it)}${it.type.startsWith('atk') ? ` (attack ${G.atk(game, ev.p)})` : it.type.startsWith('def') ? ` (defense ${G.def(game, ev.p)})` : ''}.`, pl.color));
     if (ev.kind === 'attack') {
       if (ev.result === 'capture') UI.toast(`${name} captured a cell (damage ${ev.dmg}).`, pl.color);
       else if (ev.result === 'wall') UI.toast(`${name} broke 1 wall layer; ${ev.wallsLeft} left.`, pl.color);
       else UI.toast(`${name} attacked, but damage was ${ev.dmg}. Nothing happened.`, pl.color);
     }
     (ev.lost || []).forEach(l => UI.toast(`${game.players[l.p].name} lost a captured cell's +${l.value} ${l.type === 'atk+' ? 'attack' : 'defense'}.`, game.players[l.p].color));
+    if (ev.hive) UI.toast(ev.hiveTaken ? `${name} surrounded and took the centre base! (+1 attack, +1 defense)` : `${name} claimed the centre base! (+1 attack, +1 defense)`, pl.color);
     if (ev.enclosed) UI.toast(`${name} enclosed an area and took ${ev.enclosed} cell${ev.enclosed > 1 ? 's' : ''}!`, pl.color);
   }
 

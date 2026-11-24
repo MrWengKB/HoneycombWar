@@ -17,7 +17,9 @@
   const MAX_SIDE = 15;
   const BASE_ATTACK = 1;   // starting attack = BASE_ATTACK × level
   const BASE_DEFENSE = 1;  // starting defense = BASE_DEFENSE × level
-  const DRAW_MOVES = 4;    // 2 rounds with a full board and no capture
+  const DRAW_MOVES = 4;
+  const HIVE_ROUND = 3;     // the centre cell can be claimed from this round on
+  const HIVE_BONUS = 1;     // +attack and +defense while you hold the centre    // 2 rounds with a full board and no capture
 
   /* ---------- seeded random numbers, so a saved game continues the same way ---------- */
   function rng(state) {
@@ -120,10 +122,13 @@
     state.bases[0] = indexOf(state, q0, R - 1);
     state.bases[1] = indexOf(state, -q0, -(R - 1));
     state.bases.forEach((b, p) => { state.cells[b].owner = p; state.cells[b].base = p; });
+    // The centre "hive": a second base for whoever takes it. It can't be attacked, only surrounded.
+    state.hive = indexOf(state, 0, 0);
+    state.cells[state.hive].hive = true;
 
     // Hidden items
     const types = ITEM_SETS[state.itemSet] || ITEM_TYPES;
-    const free = state.cells.map((c, i) => i).filter(i => state.cells[i].base === undefined);
+    const free = state.cells.map((c, i) => i).filter(i => state.cells[i].base === undefined && !state.cells[i].hive);
     const want = Math.max(0, Math.min(free.length, opts.items != null ? opts.items : itemsForLevel(level)));
     for (let k = 0; k < want; k++) {
       const pick = randInt(state, k, free.length - 1);
@@ -144,8 +149,8 @@
   function moveKind(state, i, p) {
     const c = state.cells[i];
     if (!c || state.status !== 'playing') return null;
-    if (c.owner === -1) return touches(state, i, p) ? 'claim' : null;
-    if (c.owner === 1 - p && c.base === undefined && !guarded(state, i, p)) return touches(state, i, p) ? 'attack' : null;
+    if (c.owner === -1) return touches(state, i, p) && (!c.hive || hiveOpen(state)) ? 'claim' : null;
+    if (c.owner === 1 - p && c.base === undefined && !c.hive && !guarded(state, i, p)) return touches(state, i, p) ? 'attack' : null;
     return null;
   }
   // A cell captured on the opponent's last move can't be taken back straight away.
@@ -153,6 +158,11 @@
     const g = state.guard;
     return !!(g && g.by === 1 - p && g.cells.indexOf(i) !== -1);
   }
+  function hiveOpen(state) { return round(state) >= HIVE_ROUND; }
+  function hiveOwner(state) { return state.hive >= 0 && state.hive !== undefined ? state.cells[state.hive].owner : -1; }
+  // Attack and defense including the centre bonus
+  function atk(state, p) { return state.players[p].atk + (hiveOwner(state) === p ? HIVE_BONUS : 0); }
+  function def(state, p) { return state.players[p].def + (hiveOwner(state) === p ? HIVE_BONUS : 0); }
   function maxRounds(state) { return state.maxRounds || 3 * state.cells.length; }
   function round(state) { return Math.floor(state.moves / 2) + 1; }
   // A cell changes hands to p. If it held a boost (+attack/+defense) found by the old owner,
@@ -193,7 +203,7 @@
     return out;
   }
   function damage(state, p) {
-    return state.players[p].atk - state.players[1 - p].def;
+    return atk(state, p) - def(state, 1 - p);
   }
   // What an attack on cell i would do now: { dmg, walls, result: 'capture'|'wall'|'fail' }
   function previewAttack(state, i, p) {
@@ -206,11 +216,11 @@
 
   // Enclosures and rings can also take opponent cells, unless the opponent's defense is greater than p's attack.
   // Walled cells and bases are never taken this way.
-  function canSweep(state, p) { return state.players[p].atk >= state.players[1 - p].def; }
+  function canSweep(state, p) { return atk(state, p) >= def(state, 1 - p); }
   function sweepable(state, k, p, strong) {
     const c = state.cells[k];
-    if (c.owner === -1) return true;
-    return strong && c.owner === 1 - p && c.base === undefined && c.walls === 0 && !guarded(state, k, p);
+    if (c.owner === -1) return !c.hive || hiveOpen(state);
+    return strong && c.owner === 1 - p && c.base === undefined && !c.hive && c.walls === 0 && !guarded(state, k, p);
   }
 
   // Occupy a cell for p and use its hidden item. Rings found by a ring also go off.
@@ -247,6 +257,7 @@
     const seen = new Uint8Array(state.cells.length);
     const areas = [];
     const theirBase = state.bases[1 - p];
+    const theirHive = hiveOwner(state) === 1 - p ? state.hive : -2;
     for (let i = 0; i < state.cells.length; i++) {
       if (seen[i] || state.cells[i].owner === p) continue;
       const area = [];
@@ -255,7 +266,7 @@
       seen[i] = 1;
       while (stack.length) {
         const k = stack.pop();
-        if (k === theirBase) ok = false;
+        if (k === theirBase || k === theirHive) ok = false;
         area.push(k);
         for (const j of nbrs(state, k)) {
           if (!seen[j] && state.cells[j].owner !== p) { seen[j] = 1; stack.push(j); }
@@ -311,6 +322,13 @@
         if (state.cells[k].owner !== p && sweepable(state, k, p, strong)) { occupy(state, k, p, ev); ev.enclosed++; }
       }
     }
+    // Surrounding the opponent's centre base takes it
+    if (hiveOwner(state) === 1 - p && !guarded(state, state.hive, p) &&
+        nbrs(state, state.hive).every(j => state.cells[j].owner === p)) {
+      takeOver(state, state.hive, p, ev);
+      ev.hiveTaken = true;
+    }
+    if (ev.changed.indexOf(state.hive) !== -1) ev.hive = true;
     if (ev.taken) ev.captured = true;
     state.guard = ev.takenCells ? { by: p, cells: ev.takenCells.slice() } : null;
 
@@ -419,6 +437,7 @@
   }
 
   root.HexGame = {
+    HIVE_ROUND, HIVE_BONUS, hiveOpen, hiveOwner, atk, def,
     DIRS, ITEM_TYPES, ITEM_SETS, MIN_SIDE, MAX_SIDE, DRAW_MOVES,
     sideForLevel, cellCount, maxItems, itemsForLevel, levelInfo,
     createGame, restore, clone, nbrs, indexOf, legalMoves, moveKind, previewAttack, damage,

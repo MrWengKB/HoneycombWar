@@ -86,6 +86,12 @@
         }
         el('polygon', { points: star.join(' '), class: 'star' }, n.g);
       });
+      // centre base marker
+      if (state.hive >= 0 && state.hive !== undefined) {
+        const n = this.nodes[state.hive];
+        el('polygon', { points: hexPoints(n.x, n.y, S * 0.55), class: 'hivemark' }, n.g);
+        el('polygon', { points: hexPoints(n.x, n.y, S * 0.25), class: 'hivecore' }, n.g);
+      }
       this.fit();
       this.update();
     }
@@ -114,7 +120,7 @@
       st.cells.forEach((c, i) => {
         const n = this.nodes[i];
         const col = c.owner >= 0 ? st.players[c.owner].color : EMPTY;
-        let fill = c.base !== undefined ? mix(col, '#000000', 0.18) : col;
+        let fill = c.base !== undefined || (c.hive && c.owner >= 0) ? mix(col, '#000000', 0.18) : col;
         let cls = 'cell';
         const kind = hint && hint.moves.get(i);
         if (kind === 'claim') { fill = mix(st.players[hint.p].color, EMPTY, 0.72); cls += ' can'; }
@@ -127,7 +133,7 @@
         if (kind === 'attack') n.hex.style.setProperty('--hit', st.players[hint.p].color);
         n.w1.style.display = c.walls >= 1 ? '' : 'none';
         n.w2.style.display = c.walls >= 2 ? '' : 'none';
-        n.label.textContent = c.seen && c.item && c.base === undefined ? itemLabel(c.item) : '';
+        n.label.textContent = c.seen && c.item && c.base === undefined && !c.hive ? itemLabel(c.item) : '';
         n.label.setAttribute('font-size', c.seen && c.item && c.item.type === 'ring' ? 18 : 11);
       });
     }
