@@ -1,6 +1,6 @@
 # Honeycomb War
 
-A turn-based strategy game on a honeycomb board, played in the browser: https://mrwengkb.github.io/HoneycombWar/
+A turn-based strategy game on a honeycomb board, played in the browser.
 
 ## Rules
 
