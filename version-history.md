@@ -1,3 +1,6 @@
+# v1.8.2
+- "Support the author" now shows real ads from Honeycomb War's own AdMob account
+
 # v1.8.1
 - Android app: sign in with Google (the phone's own account picker) to keep your progress in Google Drive, the same as on the website
 
