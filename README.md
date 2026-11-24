@@ -44,6 +44,7 @@ Optional Google sign-in (same OAuth client as Class Manager, `drive.file` scope)
 - **Support the author:** a menu button shows one rewarded AdMob ad (IDs in `android/app/src/main/res/values/admob.xml`).
 - **Signing:** a fixed key in `android/app/honeycombwar.keystore` (like HanziQuery), so every build installs over the previous one.
 - **Google sign-in:** the app uses the phone's own Google account picker (play-services-auth AuthorizationClient) and passes the access token to the page, so saves go to the same Drive file as the website. It needs an Android OAuth client in the same Google Cloud project: package `io.github.mrwengkb.honeycombwar`, SHA-1 `5B:87:8E:EA:02:F8:15:BB:A5:56:B4:55:A3:81:0F:7C:59:9B:10:75`.
+- **Google Play:** the same build also makes `HoneycombWar.aab` (release build, `PLAY_STORE = true`: no "Check for updates", Play handles updates). The repo keystore is the Play upload key. After the first upload, add the **app signing key** SHA-1 from Play Console (Test and release › App integrity) to a second Android OAuth client, or Google sign-in won't work in the Play version.
 
 ## Files
 

@@ -123,7 +123,8 @@ public class MainActivity extends Activity {
 
         webView.loadUrl(START_URL);
 
-        if (savedInstanceState == null) checkForUpdate(false);
+        // The Play Store version is updated by Play, not by this check
+        if (savedInstanceState == null && !BuildConfig.PLAY_STORE) checkForUpdate(false);
     }
 
     /** Android 15+ draws apps edge to edge: pad the game so it stays clear of the status and navigation bars. */
@@ -159,6 +160,12 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void signIn() {
             runOnUiThread(MainActivity.this::authorize);
+        }
+
+        /** false in the Play Store version, which hides "Check for updates" */
+        @JavascriptInterface
+        public boolean canCheckUpdates() {
+            return !BuildConfig.PLAY_STORE;
         }
 
         @JavascriptInterface

@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK and AAB
 
 # Same as HanziQuery: add a new "# vX.Y.Z" section at the top of version-history.md and push to main.
 # This builds the APK (with the current web game inside) and publishes it as the "apk-latest" release.
@@ -31,20 +31,24 @@ jobs:
       - name: Run the rules tests
         run: node tests/game.test.js
 
-      - name: Build APK
+      - name: Build APK (GitHub) and AAB (Google Play)
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug bundleRelease --no-daemon --stacktrace
 
-      - name: Rename APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk HoneycombWar.apk
+      - name: Rename APK and AAB
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk HoneycombWar.apk
+          cp android/app/build/outputs/bundle/release/app-release.aab HoneycombWar.aab
 
       - name: Save as build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: HoneycombWar-apk
-          path: HoneycombWar.apk
+          name: HoneycombWar-apk-aab
+          path: |
+            HoneycombWar.apk
+            HoneycombWar.aab
 
       - name: Publish to Releases (download straight to a phone)
         env:
@@ -56,11 +60,13 @@ jobs:
           {
             echo "Build ${{ github.run_number }}. Download HoneycombWar.apk and open it to install. The game plays offline."
             echo
+            echo "HoneycombWar.aab is for uploading to Google Play."
+            echo
             cat latest-notes.md
           } > release-notes.md
 
           gh release delete apk-latest --cleanup-tag -y || true
-          gh release create apk-latest HoneycombWar.apk \
+          gh release create apk-latest HoneycombWar.apk HoneycombWar.aab \
             --title "Honeycomb War ${VERSION:-(latest)}" \
             --notes-file release-notes.md \
             --latest

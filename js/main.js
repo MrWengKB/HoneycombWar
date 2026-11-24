@@ -564,6 +564,12 @@
     document.body.classList.add('in-app');
     $('#btnSupport').addEventListener('click', () => window.HWApp.support());
     $('#btnUpdates').addEventListener('click', () => window.HWApp.checkUpdates());
+    // The Google Play version gets updates from Play, so it has no "Check for updates"
+    if (window.HWApp.canCheckUpdates && !window.HWApp.canCheckUpdates()) {
+      const btn = $('#btnUpdates');
+      if (btn.nextElementSibling) btn.nextElementSibling.remove(); // the "·" after it
+      btn.remove();
+    }
     // Back button: close a dialog, or go back to the menu; false lets the app close
     window.hwBack = () => {
       const modals = document.querySelectorAll('.modal');

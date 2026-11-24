@@ -35,13 +35,31 @@ android {
         versionName = latestVersionName()
     }
 
-    // A fixed key, so every build is signed the same way and updates install over older versions
+    // A fixed key, so every build is signed the same way and updates install over older versions.
+    // The same key is the Google Play upload key for the AAB (Play re-signs the app with its own key).
     signingConfigs {
         getByName("debug") {
             storeFile = file("honeycombwar.keystore")
             storePassword = "android"
             keyAlias = "honeycombwar"
             keyPassword = "android"
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    buildTypes {
+        // The APK on GitHub Releases: checks GitHub for new versions itself
+        getByName("debug") {
+            buildConfigField("boolean", "PLAY_STORE", "false")
+        }
+        // The AAB for Google Play: Play handles updates, so the app's own update check is off
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false
+            buildConfigField("boolean", "PLAY_STORE", "true")
         }
     }
 

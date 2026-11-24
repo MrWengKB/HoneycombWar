@@ -1,3 +1,6 @@
+# v1.8.3
+- Google Play version of the app (updates come from Play, so it has no "Check for updates")
+
 # v1.8.2
 - "Support the author" now shows real ads from Honeycomb War's own AdMob account
 
