@@ -180,4 +180,14 @@ test('round limit is 3x the cell count, then most cells wins', () => {
   G.play(s, G.legalMoves(s, s.turn)[0].idx);
   assert.equal(s.reason, 'limit'); assert.notEqual(s.status, 'playing');
 });
+test('hopeless: no grey cells, no damage, and the opponent can capture', () => {
+  const s = blank();
+  s.cells.forEach(c => { if (c.owner === -1) c.owner = c.r > 0 ? 0 : 1; });
+  assert.equal(G.hopeless(s, 0), false); // equal stats: nobody can capture
+  s.players[1].atk = 3;
+  assert.equal(G.hopeless(s, 0), true);
+  assert.equal(G.hopeless(s, 1), false);
+  s.players[0].atk = 3; s.players[1].def = 2;
+  assert.equal(G.hopeless(s, 0), false); // we can hit back
+});
 console.log(`\n${n} tests passed`);

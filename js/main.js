@@ -266,6 +266,7 @@
     board.build(game);
     refresh();
     maybeCpu();
+    checkHopeless();
   }
   const humanTurn = () => game && game.status === 'playing' && !game.players[game.turn].cpu && !busy;
   const confirmMoves = () => !!$('#optConfirm').checked;
@@ -337,6 +338,25 @@
     if (ev.pass) UI.toast(`${game.players[1 - p].name} has no move and passes.`);
     refresh();
     maybeCpu();
+    checkHopeless();
+  }
+  // Once per game and player: suggest retiring when there is no way back.
+  async function checkHopeless() {
+    if (!humanTurn()) return;
+    const p = game.turn;
+    game.retireAsked = game.retireAsked || [false, false];
+    if (game.retireAsked[p] || !G.hopeless(game, p)) return;
+    game.retireAsked[p] = true;
+    persist();
+    const pl = game.players[p], op = game.players[1 - p];
+    const who = game.mode === 'friend' ? pl.name + ', there' : 'There';
+    const v = await UI.dialog({
+      icon: '🏳️',
+      title: 'No way back',
+      body: `${who} are no grey cells left for you to take, and your attack (${pl.atk}) can't beat ${op.name === 'CPU' ? "the CPU's" : op.name + "'s"} defense (${op.def}), so you can't capture anything. Your cells can only be captured one by one. Retire now?`,
+      buttons: [{ label: 'Keep playing', value: false, kind: 'ghost' }, { label: 'Retire', value: true, kind: 'danger' }]
+    });
+    if (v && game && game.status === 'playing' && game.turn === p) { G.retire(game, p); finish(); }
   }
   function maybeCpu() {
     if (!game || game.status !== 'playing' || !game.players[game.turn].cpu) return;

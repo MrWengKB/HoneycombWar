@@ -176,6 +176,14 @@
       ev.lost.push({ idx: k, type: it.type, value: it.value, p: old });
     }
   }
+  // No way back for p: no grey cell to take, no attack that can do damage (so no capture,
+  // wall hit or enclosure is possible), while the opponent can still capture p's cells.
+  function hopeless(state, p) {
+    if (state.status !== 'playing') return false;
+    if (damage(state, 1 - p) <= 0) return false;
+    if (damage(state, p) > 0) return false;
+    return !legalMoves(state, p).some(m => m.kind === 'claim');
+  }
   function legalMoves(state, p) {
     const out = [];
     for (let i = 0; i < state.cells.length; i++) {
@@ -377,6 +385,6 @@
     DIRS, ITEM_TYPES, ITEM_SETS, MIN_SIDE, MAX_SIDE, DRAW_MOVES,
     sideForLevel, cellCount, maxItems, itemsForLevel, levelInfo,
     createGame, restore, clone, nbrs, indexOf, legalMoves, moveKind, previewAttack, damage,
-    play, retire, score, guarded, maxRounds, round, emptyCount, surrounded, enclosedAreas, dist
+    play, retire, score, guarded, hopeless, maxRounds, round, emptyCount, surrounded, enclosedAreas, dist
   };
 })(typeof window !== 'undefined' ? window : globalThis);
