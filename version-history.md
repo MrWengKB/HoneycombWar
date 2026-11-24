@@ -1,3 +1,6 @@
+# v1.8.1
+- Android app: sign in with Google (the phone's own account picker) to keep your progress in Google Drive, the same as on the website
+
 # v1.8.0
 - First Android app: the whole game is built in and plays offline
 - "Support the author" button (watch one ad) and "Check for updates" in the app's menu

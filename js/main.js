@@ -43,7 +43,7 @@
     const ok = await UI.dialog({
       icon: '⚠️',
       title: 'Play without signing in?',
-      body: 'Your level and games will be saved only in this browser on this device. If you clear the browser data or switch devices, your progress is lost. You can sign in later to keep it in Google Drive.',
+      body: (window.HWApp ? 'Your level and games will be saved only in this app on this phone. If you uninstall the app or switch phones, your progress is lost.' : 'Your level and games will be saved only in this browser on this device. If you clear the browser data or switch devices, your progress is lost.') + ' You can sign in later to keep it in Google Drive.',
       buttons: [{ label: 'Back', value: false, kind: 'ghost' }, { label: 'Play without signing in', value: true, kind: 'primary' }]
     });
     if (!ok) return;
@@ -582,7 +582,6 @@
   async function boot() {
     wire();
     wireApp();
-    if (inApp && window.Store.mode() !== 'guest') window.Store.setMode('guest');
     const mode = window.Store.mode();
     if (mode === 'guest' || (mode === 'google' && window.Auth.current())) await enterMenu();
     else show('welcome');

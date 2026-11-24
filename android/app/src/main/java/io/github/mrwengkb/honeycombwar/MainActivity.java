@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -27,6 +28,11 @@ import android.widget.Toast;
 
 import androidx.webkit.WebViewAssetLoader;
 
+import com.google.android.gms.auth.api.identity.AuthorizationRequest;
+import com.google.android.gms.auth.api.identity.AuthorizationResult;
+import com.google.android.gms.auth.api.identity.Identity;
+import com.google.android.gms.common.api.Scope;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -35,6 +41,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,6 +78,8 @@ public class MainActivity extends Activity {
     private static final String BACK_JS = "(function(){return !!(window.hwBack && window.hwBack());})()";
 
     private WebView webView;
+    private static final int REQ_SIGN_IN = 41;
+    private static final String DRIVE_FILE = "https://www.googleapis.com/auth/drive.file";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,11 +155,67 @@ public class MainActivity extends Activity {
             });
         }
 
+        /** Google sign-in with the phone's own account picker; the page gets the access token in hwSignedIn(token). */
+        @JavascriptInterface
+        public void signIn() {
+            runOnUiThread(MainActivity.this::authorize);
+        }
+
+        @JavascriptInterface
+        public boolean canSignIn() {
+            return true;
+        }
+
         @JavascriptInterface
         public String version() {
             String v = currentVersionName();
             return v == null ? "" : v;
         }
+    }
+
+    // ---------- Google sign-in (Drive access for the encrypted save file) ----------
+
+    private void authorize() {
+        AuthorizationRequest request = AuthorizationRequest.builder()
+                .setRequestedScopes(Arrays.asList(new Scope(DRIVE_FILE), new Scope("email"), new Scope("profile"), new Scope("openid")))
+                .build();
+        Identity.getAuthorizationClient(this).authorize(request)
+                .addOnSuccessListener(result -> {
+                    if (result.hasResolution() && result.getPendingIntent() != null) {
+                        try {
+                            startIntentSenderForResult(result.getPendingIntent().getIntentSender(), REQ_SIGN_IN, null, 0, 0, 0);
+                        } catch (IntentSender.SendIntentException e) {
+                            signInFailed("popup");
+                        }
+                    } else {
+                        signedIn(result);
+                    }
+                })
+                .addOnFailureListener(e -> signInFailed("popup"));
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != REQ_SIGN_IN) return;
+        if (resultCode != RESULT_OK || data == null) { signInFailed("denied"); return; }
+        try {
+            signedIn(Identity.getAuthorizationClient(this).getAuthorizationResultFromIntent(data));
+        } catch (Exception e) {
+            signInFailed("popup");
+        }
+    }
+
+    private void signedIn(AuthorizationResult result) {
+        String token = result.getAccessToken();
+        if (token == null) { signInFailed("popup"); return; }
+        if (!result.getGrantedScopes().contains(DRIVE_FILE)) { signInFailed("scope"); return; }
+        webView.evaluateJavascript("window.hwSignedIn && window.hwSignedIn(" + JSONObject.quote(token) + ")", null);
+    }
+
+    private void signInFailed(String code) {
+        webView.evaluateJavascript("window.hwSignInFailed && window.hwSignInFailed(" + JSONObject.quote(code) + ")", null);
     }
 
     // ---------- check for updates ----------

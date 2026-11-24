@@ -36,8 +36,27 @@
     return gsiPromise;
   }
 
+  // Android app: the app signs in with the phone's Google account and hands over an access token.
+  function appToken() {
+    return new Promise((resolve, reject) => {
+      window.hwSignedIn = token => resolve(token);
+      window.hwSignInFailed = code => reject(Object.assign(new Error(code), { code }));
+      window.HWApp.signIn();
+    });
+  }
+  async function signInApp() {
+    const token = await appToken();
+    const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: 'Bearer ' + token } })
+      .then(r => r.json()).catch(() => ({}));
+    if (!info.email) throw Object.assign(new Error('userinfo'), { code: 'popup' });
+    write({ token, exp: Date.now() + 3500 * 1000, email: info.email, name: info.name || '' });
+    return token;
+  }
+  const inApp = () => !!(window.HWApp && window.HWApp.canSignIn && window.HWApp.canSignIn());
+
   // Must be called from a click: opens Google's sign-in popup.
   async function signIn() {
+    if (inApp()) return signInApp();
     await loadGsi();
     const prev = current();
     const resp = await new Promise((resolve, reject) => {
