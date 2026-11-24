@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Honeycomb War</title>
+  <meta name="description" content="A turn-based strategy game on a honeycomb board. Claim cells, find hidden items, and surround the enemy base.">
+  <meta name="theme-color" content="#f5b301">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Welcome -->
+  <section id="welcome" class="screen">
+    <div class="card hero">
+      <img src="favicon.svg" alt="" class="logo">
+      <h1>Honeycomb War</h1>
+      <p class="sub">Claim the honeycomb, find hidden items, and surround the enemy base.</p>
+      <button id="btnGoogle" class="btn google" type="button">
+        <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        <span>Sign in with Google</span>
+      </button>
+      <button id="btnGuest" class="btn ghost" type="button">Play without signing in</button>
+      <p class="note">Signing in saves your progress in your own Google Drive, in a folder called “Honeycomb War”. The game can only see the files it creates.</p>
+      <p id="welcomeMsg" class="msg warn" hidden></p>
+    </div>
+  </section>
+
+  <!-- Main menu -->
+  <section id="menu" class="screen" hidden>
+    <div class="card">
+      <div class="menuhead">
+        <img src="favicon.svg" alt="" class="logo small">
+        <div>
+          <h1>Honeycomb War</h1>
+          <div id="who" class="who"></div>
+        </div>
+      </div>
+      <div class="levelbox">
+        <div class="lvl"><span>Level</span><b id="mLevel">1</b></div>
+        <div class="lvlinfo" id="mLevelInfo"></div>
+      </div>
+      <div class="record" id="mRecord"></div>
+      <div id="syncBar" class="sync"></div>
+      <div class="menubtns">
+        <button id="btnContinue" class="btn primary" type="button" hidden>Continue game</button>
+        <button id="btnCpu" class="btn primary" type="button">Play vs CPU</button>
+        <button id="btnFriend" class="btn" type="button">Play with a friend</button>
+        <button id="btnHow" class="btn ghost" type="button">How to play</button>
+      </div>
+      <label class="toggle"><input type="checkbox" id="optConfirm"> Tap twice to confirm a move</label>
+      <div class="menufoot">
+        <button id="btnAccount" class="link" type="button"></button>
+        <span>·</span>
+        <a href="privacy.html" class="link">Privacy</a>
+        <span>·</span>
+        <span id="ver"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup: vs CPU -->
+  <section id="setupCpu" class="screen" hidden>
+    <div class="card">
+      <h2>Play vs CPU</h2>
+      <p id="cpuInfo" class="sub"></p>
+      <div class="field"><label>Your colour</label><div class="swatches" data-for="cpuMe"></div></div>
+      <div class="field"><label>CPU colour</label><div class="swatches" data-for="cpuThem"></div></div>
+      <div class="field"><label>Who goes first</label>
+        <div class="seg" data-for="cpuFirst">
+          <button type="button" data-v="0">You</button><button type="button" data-v="1">CPU</button><button type="button" data-v="r">Random</button>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn ghost" type="button" data-back>Back</button>
+        <button id="startCpu" class="btn primary" type="button">Start</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup: friend -->
+  <section id="setupFriend" class="screen" hidden>
+    <div class="card">
+      <h2>Play with a friend</h2>
+      <p class="sub">Friend games do not change your level.</p>
+      <div class="two">
+        <div class="field"><label for="fName0">Bottom player</label><input id="fName0" maxlength="16" value="Player 1"><div class="swatches" data-for="f0"></div></div>
+        <div class="field"><label for="fName1">Top player</label><input id="fName1" maxlength="16" value="Player 2"><div class="swatches" data-for="f1"></div></div>
+      </div>
+      <div class="field"><label>Who goes first</label>
+        <div class="seg" data-for="fFirst">
+          <button type="button" data-v="0">Bottom</button><button type="button" data-v="1">Top</button><button type="button" data-v="r">Random</button>
+        </div>
+      </div>
+      <div class="field"><label>How you sit</label>
+        <div class="seg" data-for="fLayout">
+          <button type="button" data-v="pass">Pass and play</button><button type="button" data-v="face">Face to face (tablet)</button>
+        </div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="fSide">Board size (cells per side)</label><select id="fSide"></select></div>
+        <div class="field"><label for="fItems">Hidden items</label><input id="fItems" type="number" min="0" step="1"><small id="fItemsMax"></small></div>
+      </div>
+      <div class="field"><label>Items</label>
+        <div class="seg" data-for="fSet">
+          <button type="button" data-v="all">All</button><button type="button" data-v="positive">Positive only</button><button type="button" data-v="negative">Negative only</button>
+        </div>
+        <small id="fSetHelp"></small>
+      </div>
+      <div class="field"><label for="fStrength">Starting attack and defense</label><input id="fStrength" type="number" min="1" max="50" value="1"></div>
+      <div class="row">
+        <button class="btn ghost" type="button" data-back>Back</button>
+        <button id="startFriend" class="btn primary" type="button">Start</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game -->
+  <section id="game" class="screen gamescreen" hidden>
+    <div class="panel" id="panel1"></div>
+    <div class="boardwrap" id="boardWrap">
+      <svg id="board" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Game board"></svg>
+    </div>
+    <div class="status" id="status" aria-live="polite"></div>
+    <div class="panel" id="panel0"></div>
+    <div class="toolbar">
+      <button id="gMenu" class="btn small ghost" type="button">Menu</button>
+      <button id="gZoomOut" class="btn small ghost" type="button" aria-label="Zoom out">−</button>
+      <button id="gZoomIn" class="btn small ghost" type="button" aria-label="Zoom in">+</button>
+      <button id="gHelp" class="btn small ghost" type="button">?</button>
+      <button id="gRetire" class="btn small danger" type="button">Retire</button>
+    </div>
+  </section>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <template id="howTpl">
+    <div class="how">
+      <p><b>Goal:</b> surround the enemy base. When all 6 cells around it are yours, you win.</p>
+      <p><b>Your turn:</b> take one grey cell next to your cells, or attack an enemy cell next to your cells. Every move uses your turn, even when the attack fails.</p>
+      <p><b>Attack:</b> your attack − their defense = damage. If the damage is more than 0, the cell becomes yours. Bases can't be captured.</p>
+      <p><b>Walls:</b> any hit with damage of 1 or more removes 1 wall layer (one per turn). A walled cell can only be captured once no wall is left.</p>
+      <p><b>Hidden items</b> are revealed when you take their cell:</p>
+      <ul class="items">
+        <li><span class="ic atk">A+</span> attack up by 1 to 4</li>
+        <li><span class="ic bad">A−</span> attack down by 1 to 4</li>
+        <li><span class="ic def">D+</span> defense up by 1 to 4</li>
+        <li><span class="ic bad">D−</span> defense down by 1 to 4</li>
+        <li><span class="ic wall">W</span> a wall of 1 or 2 layers on that cell</li>
+        <li><span class="ic ring">◎</span> ring: you also take the cells around it</li>
+      </ul>
+      <p><b>Enclose an area</b> with your cells (the board edge counts) and it all becomes yours. Rings and enclosures also take enemy cells without walls, unless the enemy's defense is greater than your attack.</p>
+      <p><b>All your cells share one attack and one defense</b>, shown in your panel.</p>
+      <p><b>End:</b> when the board is full and nobody captures anything for 2 rounds, the player with more cells wins. Equal cells is a draw. Retiring gives the win to the other player.</p>
+      <p><b>Levels:</b> win or draw against the CPU to level up. The board grows every 4 levels (up to 15 cells per side) and more items are hidden. Starting attack and defense equal your level.</p>
+    </div>
+  </template>
+
+  <script src="js/config.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/cpu.js"></script>
+  <script src="js/crypto.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/drive.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
