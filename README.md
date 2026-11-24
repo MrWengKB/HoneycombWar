@@ -14,7 +14,7 @@ A turn-based strategy game on a honeycomb board, played in the browser: https://
 - Enclosing an area with your cells (the board edge counts) takes the whole area. Rings and enclosures also take opponent cells without walls, unless the opponent's defense is greater than your attack.
 - All of a player's cells share one attack and one defense.
 - Pass: a player may pass instead of moving. Passing twice in a row while the opponent keeps playing loses; if both players pass one after the other, the game ends on cell count.
-- Centre base: the centre cell can be claimed from round 3. Whoever holds it gets +1 attack and +1 defense. It can't be attacked or enclosed; it changes hands only when the other player surrounds all 6 cells around it (and can't be taken back on the very next turn). Only the home base decides the game.
+- Centre base: the centre cell can be claimed from round 3. Whoever holds it gets extra defense equal to the level (friend games: the starting strength). It can't be attacked or enclosed; it changes hands only when the other player surrounds all 6 cells around it (and can't be taken back on the very next turn). Only the home base decides the game.
 - Win by surrounding the opponent's base. Retiring gives the win to the opponent.
 - When the board is full and nobody captures for 2 rounds (4 moves), the player with more cells wins; equal cells is a draw.
 - Round limit: 3 × the number of cells. When it is reached, most cells wins (equal is a draw).

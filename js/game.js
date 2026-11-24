@@ -19,7 +19,7 @@
   const BASE_DEFENSE = 1;  // starting defense = BASE_DEFENSE × level
   const DRAW_MOVES = 4;
   const HIVE_ROUND = 3;     // the centre cell can be claimed from this round on
-  const HIVE_BONUS = 1;     // +attack and +defense while you hold the centre    // 2 rounds with a full board and no capture
+  // While you hold the centre: +defense equal to the level (friend games: the starting strength)    // 2 rounds with a full board and no capture
 
   /* ---------- seeded random numbers, so a saved game continues the same way ---------- */
   function rng(state) {
@@ -125,6 +125,7 @@
     // The centre "hive": a second base for whoever takes it. It can't be attacked, only surrounded.
     state.hive = indexOf(state, 0, 0);
     state.cells[state.hive].hive = true;
+    state.hiveBonus = strength;
 
     // Hidden items
     const types = ITEM_SETS[state.itemSet] || ITEM_TYPES;
@@ -161,8 +162,9 @@
   function hiveOpen(state) { return round(state) >= HIVE_ROUND; }
   function hiveOwner(state) { return state.hive >= 0 && state.hive !== undefined ? state.cells[state.hive].owner : -1; }
   // Attack and defense including the centre bonus
-  function atk(state, p) { return state.players[p].atk + (hiveOwner(state) === p ? HIVE_BONUS : 0); }
-  function def(state, p) { return state.players[p].def + (hiveOwner(state) === p ? HIVE_BONUS : 0); }
+  function hiveBonus(state) { return state.hiveBonus || state.level || 1; }
+  function atk(state, p) { return state.players[p].atk; }
+  function def(state, p) { return state.players[p].def + (hiveOwner(state) === p ? hiveBonus(state) : 0); }
   function maxRounds(state) { return state.maxRounds || 3 * state.cells.length; }
   function round(state) { return Math.floor(state.moves / 2) + 1; }
   // A cell changes hands to p. If it held a boost (+attack/+defense) found by the old owner,
@@ -437,7 +439,7 @@
   }
 
   root.HexGame = {
-    HIVE_ROUND, HIVE_BONUS, hiveOpen, hiveOwner, atk, def,
+    HIVE_ROUND, hiveBonus, hiveOpen, hiveOwner, atk, def,
     DIRS, ITEM_TYPES, ITEM_SETS, MIN_SIDE, MAX_SIDE, DRAW_MOVES,
     sideForLevel, cellCount, maxItems, itemsForLevel, levelInfo,
     createGame, restore, clone, nbrs, indexOf, legalMoves, moveKind, previewAttack, damage,

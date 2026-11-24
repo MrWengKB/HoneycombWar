@@ -290,7 +290,7 @@
       box.style.setProperty('--pc', pl.color);
       box.classList.toggle('active', game.status === 'playing' && game.turn === p);
       box.innerHTML = `<span class="dot"></span><span class="pname"></span>
-        ${G.hiveOwner(game) === p ? '<span class="hivetag" title="Holds the centre base: +1 attack, +1 defense">⬡+1</span>' : ''}
+        ${G.hiveOwner(game) === p ? `<span class="hivetag" title="Holds the centre base: +${G.hiveBonus(game)} defense">⬡ +${G.hiveBonus(game)}🛡</span>` : ''}
         <span class="stat" title="Attack"><i>⚔</i><b>${G.atk(game, p)}</b></span>
         <span class="stat" title="Defense"><i>🛡</i><b>${G.def(game, p)}</b></span>
         <span class="stat" title="Cells"><i>⬢</i><b>${n[p]}</b></span>`;
@@ -410,7 +410,7 @@
       else UI.toast(`${name} attacked, but damage was ${ev.dmg}. Nothing happened.`, pl.color);
     }
     (ev.lost || []).forEach(l => UI.toast(`${game.players[l.p].name} lost a captured cell's +${l.value} ${l.type === 'atk+' ? 'attack' : 'defense'}.`, game.players[l.p].color));
-    if (ev.hive) UI.toast(ev.hiveTaken ? `${name} surrounded and took the centre base! (+1 attack, +1 defense)` : `${name} claimed the centre base! (+1 attack, +1 defense)`, pl.color);
+    if (ev.hive) UI.toast(ev.hiveTaken ? `${name} surrounded and took the centre base! (+${G.hiveBonus(game)} defense)` : `${name} claimed the centre base! (+${G.hiveBonus(game)} defense)`, pl.color);
     if (ev.enclosed) UI.toast(`${name} enclosed an area and took ${ev.enclosed} cell${ev.enclosed > 1 ? 's' : ''}!`, pl.color);
   }
 
