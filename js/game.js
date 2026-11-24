@@ -337,7 +337,7 @@
       state.turn = 1 - p;
       if (!legalMoves(state, state.turn).length) {
         if (!legalMoves(state, p).length) endByCount(state, 'stuck');
-        else { ev.pass = true; state.turn = p; }
+        else { ev.pass = true; pass(state); } // no legal move counts as a pass
       }
     }
     if (state.status !== 'playing') ev.end = { status: state.status, winner: state.winner, reason: state.reason };
