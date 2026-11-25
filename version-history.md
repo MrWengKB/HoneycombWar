@@ -1,3 +1,6 @@
+# v1.9.6
+- Smarter CPU: it now races for the centre base, closes in on yours, and guards its own; its own base ring only matters once it is under attack
+
 # v1.9.5
 - Fixed: after going to the menu and back during the CPU's turn, the CPU could also make moves for you
 

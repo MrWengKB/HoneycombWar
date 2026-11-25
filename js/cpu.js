@@ -19,6 +19,11 @@
     const threat = [...myRing].filter(j => state.cells[j].owner === o).length;
     const before = G.score(state)[p];
     const maxD = state.side * 2;
+    const hive = state.hive;
+    const hiveOwner = G.hiveOwner(state);
+    const hiveRing = hive >= 0 ? new Set(G.nbrs(state, hive)) : new Set();
+    // How many of the centre's neighbours each side holds
+    const ringHeld = q => [...hiveRing].filter(j => state.cells[j].owner === q).length;
 
     let best = -Infinity, bestIdx = moves[0].idx;
     for (const m of moves) {
@@ -33,13 +38,18 @@
         else if (ev.result === 'wall') s += 4;
         else s -= 40; // would not do anything
       }
-      // the centre base: worth taking and worth surrounding
-      if (G.hiveOwner(sim) === p && G.hiveOwner(state) !== p) s += 30;
+      // the centre base: race for it, take it, hold it, and surround it when the other side has it
+      if (G.hiveOwner(sim) === p && hiveOwner !== p) s += 60;
+      if (hive >= 0 && hiveOwner !== p) {
+        s += (maxD - G.dist(state, m.idx, hive)) * 3;               // head for the centre until it's ours
+        if (hiveRing.has(m.idx)) s += hiveOwner === o ? 10 + ringHeld(p) * 6 : 8; // close in on it
+      }
+      if (hive >= 0 && hiveOwner === p && hiveRing.has(m.idx)) s += 6 + ringHeld(o) * 8; // don't let it be surrounded
       // head for the other base
       s += (maxD - G.dist(state, m.idx, theirBase)) * 1.5;
       if (theirRing.has(m.idx)) s += 12;
       // protect our own base, more urgently the more of it is taken
-      if (myRing.has(m.idx)) s += 6 + threat * threat * 8;
+      if (myRing.has(m.idx)) s += (threat ? 6 : 0) + threat * threat * 8;
       // keep the front connected: prefer cells touching several of ours
       s += G.nbrs(state, m.idx).filter(j => state.cells[j].owner === p).length * 0.8;
       s += Math.random() * 4;
