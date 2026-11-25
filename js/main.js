@@ -386,14 +386,21 @@
     const ev = G.pass(game);
     if (ev.ok) afterMove(ev, p);
   }
+  // Only one CPU move can be waiting, and it only plays if it is still the CPU's turn in the same game
+  // (leaving for the menu and coming back used to leave a second one waiting, which then moved for you).
+  let cpuTimer = null;
   function maybeCpu() {
-    if (!game || game.status !== 'playing' || !game.players[game.turn].cpu) return;
+    clearTimeout(cpuTimer);
+    cpuTimer = null;
+    if (!game || game.status !== 'playing' || !game.players[game.turn].cpu) { busy = false; return; }
     busy = true;
     refresh();
-    setTimeout(() => {
-      if (!game || game.status !== 'playing') return;
-      const idx = window.HexCPU.chooseMove(game);
+    const g = game, who = game.turn, at = game.moves;
+    cpuTimer = setTimeout(() => {
+      cpuTimer = null;
       busy = false;
+      if (game !== g || g.status !== 'playing' || g.turn !== who || g.moves !== at || !g.players[who].cpu) return;
+      const idx = window.HexCPU.chooseMove(g);
       if (idx >= 0) doMove(idx);
     }, 650);
   }
@@ -525,7 +532,7 @@
     $('#startCpu').addEventListener('click', startCpu);
     $('#startFriend').addEventListener('click', startFriend);
     $$('[data-back]').forEach(b => b.addEventListener('click', () => { renderMenu(); show('menu'); }));
-    $('#gMenu').addEventListener('click', () => { game = null; renderMenu(); show('menu'); });
+    $('#gMenu').addEventListener('click', () => { clearTimeout(cpuTimer); cpuTimer = null; busy = false; game = null; renderMenu(); show('menu'); });
     $('#gRetire').addEventListener('click', retireGame);
     $('#gPass').addEventListener('click', passTurn);
     const snd = $('#gSound');

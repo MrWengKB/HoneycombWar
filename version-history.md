@@ -1,3 +1,6 @@
+# v1.9.5
+- Fixed: after going to the menu and back during the CPU's turn, the CPU could also make moves for you
+
 # v1.9.4
 - Faster endings: when neither player's number of cells has changed for 3 rounds, the cells are counted and the game ends
 
