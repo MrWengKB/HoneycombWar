@@ -350,7 +350,7 @@ test('cells are counted when the counts stay the same for 3 rounds', () => {
   assert.equal(t.status !== 'playing', true);
   assert.ok(['standstill', 'surround'].includes(t.reason), t.reason);
 });
-test('2nd bases: 1, then 2 at level 50, 3 at 100, 4 at 200, point-symmetric and away from the edge and bases', () => {
+test('castles: 1, then 2 at level 50, 3 at 100, 4 at 200, point-symmetric and away from the edge and bases', () => {
   assert.deepEqual([1, 49, 50, 99, 100, 199, 200, 349, 350, 900].map(G.hivesForLevel), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
   for (const level of [1, 50, 100, 200, 350]) {
     const s = G.createGame({ level, seed: 3 });
@@ -367,7 +367,7 @@ test('2nd bases: 1, then 2 at level 50, 3 at 100, 4 at 200, point-symmetric and 
   }
   assert.equal(G.createGame({ mode: 'friend', level: 1, strength: 300, seed: 1 }).hives.length, 1);
 });
-test('several 2nd bases: each adds its defense, and each is taken by surrounding it', () => {
+test('several castles: each adds its defense, and each is taken by surrounding it', () => {
   const s = blank({ level: 100, side: 15, hives: 3 });
   const [a, b] = s.hives;
   const d0 = G.def(s, 0);
@@ -393,7 +393,7 @@ test('old saves with a single centre base still work', () => {
   assert.equal(G.hiveOwner(s), 1); assert.equal(G.def(s, 1), s.players[1].def + G.hiveBonus(s));
   assert.ok(HexCPU.chooseMove(s) >= 0);
 });
-test('CPU picks a plan with several 2nd bases, and a new one once its 2nd base is taken', () => {
+test('CPU picks a plan with several castles, and a new one once its castle is taken', () => {
   const plans = new Set();
   for (let k = 0; k < 40; k++) {
     const s = G.createGame({ level: 200, seed: k, first: 1, players: [{}, { cpu: true }] });

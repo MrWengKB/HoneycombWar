@@ -19,7 +19,7 @@
     const threat = [...myRing].filter(j => state.cells[j].owner === o).length;
     const before = G.score(state)[p];
     const maxD = state.side * 2;
-    // The 2nd bases, with who holds each and how many of the cells around it each side has
+    // The castles, with who holds each and how many of the cells around it each side has
     const hives = G.hives(state).map(h => {
       const ring = new Set(G.nbrs(state, h));
       const held = q => [...ring].filter(j => state.cells[j].owner === q).length;
@@ -45,11 +45,11 @@
         else if (ev.result === 'wall') s += 4;
         else s -= 40; // would not do anything
       }
-      // 2nd bases: race for them, take them, hold them, and surround the ones the other side has
+      // castles: race for them, take them, hold them, and surround the ones the other side has
       s += (G.hivesHeld(sim, p) - heldBefore) * 60;
       for (const v of hives) {
         if (v.owner !== p) {
-          // head for the one we're aiming at (with one 2nd base it's always worth heading for), and
+          // head for the one we're aiming at (with one castle it's always worth heading for), and
           // don't leave a free one to the other side when they're as close to it as we are
           const race = v.owner === -1 && v.dThem <= v.dMe + 1;
           const w = hives.length === 1 || aim === v.h || race ? 3 : v.owner === -1 ? 1.2 : 0.8;
@@ -70,9 +70,9 @@
     return bestIdx;
   }
 
-  // With several 2nd bases, each CPU picks a plan at random: go straight for the other base, or race
-  // for one free 2nd base. It picks again once that 2nd base is taken by anyone, and drops the
-  // straight-for-the-base plan while the other side holds more 2nd bases than it does.
+  // With several castles, each CPU picks a plan at random: go straight for the other base, or race
+  // for one free castle. It picks again once that castle is taken by anyone, and drops the
+  // straight-for-the-base plan while the other side holds more castles than it does.
   function pickAim(state, p, hives) {
     if (hives.length < 2) return null;
     state.cpuAim = state.cpuAim || [null, null];

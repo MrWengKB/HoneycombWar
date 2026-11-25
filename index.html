@@ -7,7 +7,7 @@
   <meta name="description" content="A turn-based strategy game on a honeycomb board. Claim cells, find hidden items, and surround the enemy base.">
   <meta name="theme-color" content="#f5b301">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=1.9.10">
+  <link rel="stylesheet" href="style.css?v=1.9.11">
 </head>
 <body>
   <!-- Welcome -->
@@ -146,7 +146,7 @@
   <template id="howTpl">
     <div class="how">
       <p><b>Goal:</b> surround the enemy base. When all 6 cells around it are yours, you win.</p>
-      <p><b>2nd base:</b> the gold cell in the middle. From round 3, the first player to take it gets a second base: extra defense while they hold it: equal to the level for levels 1–4, then growing more slowly (level − 1 at levels 5–6, − 2 at 7–8, − 3 at 9–10, − 4 at 11–12) and staying at 8 from level 12. Friend games use the starting strength instead of the level. It can't be attacked; the other player can only take it by surrounding all 6 cells around it. Losing it doesn't lose the game. From level 50 there are 2 of them on the middle row, from level 100 there are 3, from level 200 there are 4, and from level 350 there are 5 (one more in the centre). Each one works the same way and gives its own extra defense, and one player can hold them all.</p>
+      <p><b>Castle:</b> the gold cell in the middle. From round 3, the first player to take it holds the castle and gets extra defense while they hold it: equal to the level for levels 1–4, then growing more slowly (level − 1 at levels 5–6, − 2 at 7–8, − 3 at 9–10, − 4 at 11–12) and staying at 8 from level 12. Friend games use the starting strength instead of the level. It can't be attacked; the other player can only take it by surrounding all 6 cells around it. Losing it doesn't lose the game. From level 50 there are 2 of them on the middle row, from level 100 there are 3, from level 200 there are 4, and from level 350 there are 5 (one more in the centre). Each one works the same way and gives its own extra defense, and one player can hold them all.</p>
       <p><b>Your turn:</b> take one grey cell next to your cells, or attack an enemy cell next to your cells. Every move uses your turn, even when the attack fails. You may also <b>Pass</b>: passing twice in a row while the other player keeps playing loses the game, and if both players pass one after the other, the game ends and the player with more cells wins. A cell captured from you can't be taken back on your very next turn.</p>
       <p><b>Attack:</b> your attack − their defense = damage. If the damage is more than 0, the cell becomes yours. Bases can't be captured.</p>
       <p><b>Walls:</b> any hit with damage of 1 or more removes 1 wall layer (one per turn). A walled cell can only be captured once no wall is left.</p>
@@ -159,7 +159,7 @@
         <li><span class="ic wall">W</span> a wall of 1 or 2 layers on that cell</li>
         <li><span class="ic ring">◎</span> ring: you also take the cells around it</li>
       </ul>
-      <p><b>Mines</b> are hidden too: a third of the cells per side, rounded down (1 on the smallest board, 5 on the biggest). Take a mine's cell directly (an empty cell or an attack) and it explodes: that cell and the 6 around it turn black, whoever held them. Black cells can't be taken by anyone, and they count as the board edge for enclosures. A mine taken by a ring or an enclosure stays hidden and doesn't explode, until the other player captures that cell. A blast never reaches a base, a 2nd base or the cells around them.</p>
+      <p><b>Mines</b> are hidden too: a third of the cells per side, rounded down (1 on the smallest board, 5 on the biggest). Take a mine's cell directly (an empty cell or an attack) and it explodes: that cell and the 6 around it turn black, whoever held them. Black cells can't be taken by anyone, and they count as the board edge for enclosures. A mine taken by a ring or an enclosure stays hidden and doesn't explode, until the other player captures that cell. A blast never reaches a base, a castle or the cells around them.</p>
       <p><b>Enclose an area</b> with your cells (the board edge counts) and it all becomes yours. Rings and enclosures also take enemy cells without walls, unless the enemy's defense is greater than your attack.</p>
       <p><b>All your cells share one attack and one defense</b>, shown in your panel. If the enemy captures a cell where you found +attack or +defense, you lose that boost for good. A −attack or −defense you found stays with you.</p>
       <p><b>End:</b> when the board is full and nobody captures anything for 2 rounds, the player with more cells wins. Equal cells is a draw. The cells are also counted when neither player's number of cells has changed for 3 rounds (even if cells keep being traded back and forth). Each game also has a round limit of 3 × the number of cells (shown under the board); when it is reached, the player with more cells wins. Retiring gives the win to the other player.</p>
@@ -167,16 +167,16 @@
     </div>
   </template>
 
-  <script src="js/config.js?v=1.9.10"></script>
-  <script src="js/game.js?v=1.9.10"></script>
-  <script src="js/cpu.js?v=1.9.10"></script>
-  <script src="js/crypto.js?v=1.9.10"></script>
-  <script src="js/auth.js?v=1.9.10"></script>
-  <script src="js/drive.js?v=1.9.10"></script>
-  <script src="js/store.js?v=1.9.10"></script>
-  <script src="js/sound.js?v=1.9.10"></script>
-  <script src="js/music.js?v=1.9.10"></script>
-  <script src="js/ui.js?v=1.9.10"></script>
-  <script src="js/main.js?v=1.9.10"></script>
+  <script src="js/config.js?v=1.9.11"></script>
+  <script src="js/game.js?v=1.9.11"></script>
+  <script src="js/cpu.js?v=1.9.11"></script>
+  <script src="js/crypto.js?v=1.9.11"></script>
+  <script src="js/auth.js?v=1.9.11"></script>
+  <script src="js/drive.js?v=1.9.11"></script>
+  <script src="js/store.js?v=1.9.11"></script>
+  <script src="js/sound.js?v=1.9.11"></script>
+  <script src="js/music.js?v=1.9.11"></script>
+  <script src="js/ui.js?v=1.9.11"></script>
+  <script src="js/main.js?v=1.9.11"></script>
 </body>
 </html>

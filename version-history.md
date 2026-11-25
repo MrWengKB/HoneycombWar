@@ -1,3 +1,6 @@
+# v1.9.11
+- The 2nd bases are now called castles: same gold cells, same rules, new name everywhere in the game and the how-to
+
 # v1.9.10
 - Fixed: a wall's W number now counts down by 1 each time it is hit, and at 0 the badge goes and the cell can be captured like any other
 

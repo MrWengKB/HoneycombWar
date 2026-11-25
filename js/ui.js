@@ -92,7 +92,7 @@
         }
         el('polygon', { points: star.join(' '), class: 'star' }, n.g);
       });
-      // 2nd base markers
+      // castle markers
       G.hives(state).forEach(h => {
         const n = this.nodes[h];
         el('polygon', { points: hexPoints(n.x, n.y, S * 0.55), class: 'hivemark' }, n.g);

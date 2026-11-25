@@ -27,7 +27,7 @@
     if (L <= 12) return L - Math.ceil((L - 4) / 2);
     return 8;
   }
-  // How many 2nd bases: 1, then 2 from level 50, 3 from level 100, 4 from level 200 and 5 (the most) from level 350.
+  // How many castles: 1, then 2 from level 50, 3 from level 100, 4 from level 200 and 5 (the most) from level 350.
   function hivesForLevel(level) { return level >= 350 ? 5 : level >= 200 ? 4 : level >= 100 ? 3 : level >= 50 ? 2 : 1; }    // 2 rounds with a full board and no capture
 
   /* ---------- seeded random numbers, so a saved game continues the same way ---------- */
@@ -135,7 +135,7 @@
     state.bases[0] = indexOf(state, q0, R - 1);
     state.bases[1] = indexOf(state, -q0, -(R - 1));
     state.bases.forEach((b, p) => { state.cells[b].owner = p; state.cells[b].base = p; });
-    // The "hives": 2nd bases for whoever takes them. They can't be attacked, only surrounded.
+    // The "hives": castles for whoever takes them. They can't be attacked, only surrounded.
     state.hives = hiveSpots(state, opts.hives != null ? opts.hives : state.mode === 'friend' ? 1 : hivesForLevel(level));
     state.hives.forEach(h => { state.cells[h].hive = true; });
     state.hiveBonus = hiveBonusFor(strength);
@@ -173,7 +173,7 @@
     return state;
   }
 
-  // Where the 2nd bases go, always point-symmetric so neither side is favoured.
+  // Where the castles go, always point-symmetric so neither side is favoured.
   // 1: the centre. 2: the centre row at the thirds. 3: the centre row at the quarters.
   // 4: halfway between the centre and the middle of each of the 4 sides without a base. 5: those 4 plus the centre.
   function hiveSpots(state, n) {
@@ -212,7 +212,7 @@
   function hiveOpen(state) { return round(state) >= HIVE_ROUND; }
   // Saves from before v1.9.8 have a single state.hive
   function hives(state) { return state.hives || (state.hive >= 0 ? [state.hive] : []); }
-  // Owner of a 2nd base (the first one if none is given)
+  // Owner of a castle (the first one if none is given)
   function hiveOwner(state, h) {
     const i = h === undefined ? hives(state)[0] : h;
     return i >= 0 && i !== undefined ? state.cells[i].owner : -1;
@@ -414,7 +414,7 @@
         if (state.cells[k].owner !== p && sweepable(state, k, p, strong)) { occupy(state, k, p, ev); ev.enclosed++; }
       }
     }
-    // Surrounding one of the opponent's 2nd bases takes it
+    // Surrounding one of the opponent's castles takes it
     for (const h of hives(state)) {
       if (state.cells[h].owner === 1 - p && !guarded(state, h, p) &&
           nbrs(state, h).every(j => state.cells[j].owner === p)) {
