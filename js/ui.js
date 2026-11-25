@@ -31,6 +31,11 @@
   function itemLabel(it) {
     return { 'atk+': 'A+' + it.value, 'atk-': 'A−' + it.value, 'def+': 'D+' + it.value, 'def-': 'D−' + it.value, wall: 'W' + it.value, ring: '◎' }[it.type];
   }
+  // A wall shows the layers it has left; once they are all broken it is an ordinary cell with no badge.
+  function cellLabel(c) {
+    if (c.item.type === 'wall') return c.walls > 0 ? 'W' + c.walls : '';
+    return itemLabel(c.item);
+  }
   function itemText(it) {
     return {
       'atk+': `+${it.value} attack`, 'atk-': `−${it.value} attack`, 'def+': `+${it.value} defense`, 'def-': `−${it.value} defense`,
@@ -134,7 +139,7 @@
         if (kind === 'attack') n.hex.style.setProperty('--hit', st.players[hint.p].color);
         n.w1.style.display = c.walls >= 1 ? '' : 'none';
         n.w2.style.display = c.walls >= 2 ? '' : 'none';
-        n.label.textContent = c.blew ? '✹' : c.owner !== -2 && c.seen && c.item && c.base === undefined && !c.hive ? itemLabel(c.item) : '';
+        n.label.textContent = c.blew ? '✹' : c.owner !== -2 && c.seen && c.item && c.base === undefined && !c.hive ? cellLabel(c) : '';
         n.label.setAttribute('font-size', c.blew ? 16 : c.seen && c.item && c.item.type === 'ring' ? 18 : 11);
       });
     }

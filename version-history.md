@@ -1,3 +1,6 @@
+# v1.9.10
+- Fixed: a wall's W number now counts down by 1 each time it is hit, and at 0 the badge goes and the cell can be captured like any other
+
 # v1.9.9
 - Smarter CPU with several 2nd bases: once you take one, it races you for the free ones instead of letting you have them, and it drops a straight-for-your-base plan while you hold more 2nd bases than it does
 
