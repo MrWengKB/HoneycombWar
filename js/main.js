@@ -68,7 +68,7 @@
     $('#who').textContent = user ? 'Signed in as ' + (user.name || user.email) : window.HWApp ? 'Progress is saved on this phone' : 'Playing without signing in';
     $('#mLevel').textContent = p.level;
     $('#mLevelInfo').innerHTML = '';
-    [['Board', `${info.side} cells per side`], ['Hidden items', info.items], ['Mines', info.mines], ['Start attack / defense', `${info.attack} / ${info.defense}`]]
+    [['Board', `${info.side} cells per side`], ['Hidden items', info.items], ['Mines', info.mines]].concat(info.hives > 1 ? [['2nd bases', info.hives]] : []).concat([['Start attack / defense', `${info.attack} / ${info.defense}`]])
       .forEach(([k, v]) => { const d = document.createElement('div'); d.innerHTML = '<span></span><b></b>'; d.firstChild.textContent = k; d.lastChild.textContent = v; $('#mLevelInfo').appendChild(d); });
     $('#mRecord').textContent = `Wins ${p.wins} · Draws ${p.draws} · Losses ${p.losses}` + (p.best > p.level ? ` · Best level ${p.best}` : '');
     $('#btnAccount').textContent = user ? 'Sign out' : 'Sign in with Google';
@@ -165,7 +165,7 @@
       renderMenu();
     }
     const info = G.levelInfo(p.level);
-    $('#cpuInfo').textContent = `Level ${info.level}: a board with ${info.side} cells per side, ${info.items} hidden items, ${info.mines} mine${info.mines > 1 ? 's' : ''}, and attack ${info.attack} / defense ${info.defense} for both sides.`;
+    $('#cpuInfo').textContent = `Level ${info.level}: a board with ${info.side} cells per side, ${info.items} hidden items, ${info.mines} mine${info.mines > 1 ? 's' : ''}, ${info.hives > 1 ? info.hives + ' 2nd bases' : 'a 2nd base in the centre'}, and attack ${info.attack} / defense ${info.defense} for both sides.`;
     const pr = prefs();
     choice.cpuMe = pr.cpuMe || COLORS[0];
     choice.cpuThem = pr.cpuThem || COLORS[1];
@@ -290,7 +290,7 @@
       box.style.setProperty('--pc', pl.color);
       box.classList.toggle('active', game.status === 'playing' && game.turn === p);
       box.innerHTML = `<span class="dot"></span><span class="pname"></span>
-        ${G.hiveOwner(game) === p ? `<span class="hivetag" title="Holds the centre base: +${G.hiveBonus(game)} defense">⬡ +${G.hiveBonus(game)}🛡</span>` : ''}
+        ${G.hivesHeld(game, p) ? `<span class="hivetag" title="Holds ${G.hivesHeld(game, p) > 1 ? G.hivesHeld(game, p) + ' 2nd bases' : 'a 2nd base'}: +${G.hivesHeld(game, p) * G.hiveBonus(game)} defense">${'⬡'.repeat(G.hivesHeld(game, p))} +${G.hivesHeld(game, p) * G.hiveBonus(game)}🛡</span>` : ''}
         <span class="stat" title="Attack"><i>⚔</i><b>${G.atk(game, p)}</b></span>
         <span class="stat" title="Defense"><i>🛡</i><b>${G.def(game, p)}</b></span>
         <span class="stat" title="Cells"><i>⬢</i><b>${n[p]}</b></span>`;
@@ -312,10 +312,10 @@
       st.textContent = rnd + `Attack ${G.atk(game, game.turn)} − defense ${def} = ${pre.dmg}: ${tail}` + (confirmMoves() && selected === i ? '. Tap again to attack.' : '.');
     } else if (kind === 'claim') {
       st.textContent = rnd + (confirmMoves() && selected === i ? 'Tap again to take this cell.' : 'Take this cell.');
-    } else if (i >= 0 && i === game.hive && game.cells[i].owner === -1 && !G.hiveOpen(game)) {
-      st.textContent = rnd + `The centre base can be claimed from round ${G.HIVE_ROUND}.`;
-    } else if (i >= 0 && i === game.hive && game.cells[i].owner === 1 - game.turn) {
-      st.textContent = rnd + 'The centre base can only be taken by surrounding it.';
+    } else if (i >= 0 && game.cells[i].hive && game.cells[i].owner === -1 && !G.hiveOpen(game)) {
+      st.textContent = rnd + `A 2nd base can be claimed from round ${G.HIVE_ROUND}.`;
+    } else if (i >= 0 && game.cells[i].hive && game.cells[i].owner === 1 - game.turn) {
+      st.textContent = rnd + 'A 2nd base can only be taken by surrounding it.';
     } else {
       const who = game.mode === 'friend' ? pl.name + ': ' : '';
       st.textContent = rnd + who + 'take a grey cell next to yours, or attack an enemy cell next to yours.';
@@ -418,7 +418,11 @@
       else UI.toast(`${name} attacked, but damage was ${ev.dmg}. Nothing happened.`, pl.color);
     }
     (ev.lost || []).forEach(l => UI.toast(`${game.players[l.p].name} lost a captured cell's +${l.value} ${l.type === 'atk+' ? 'attack' : 'defense'}.`, game.players[l.p].color));
-    if (ev.hive) UI.toast(ev.hiveTaken ? `${name} surrounded and took the centre base! (+${G.hiveBonus(game)} defense)` : `${name} claimed the centre base! (+${G.hiveBonus(game)} defense)`, pl.color);
+    if (ev.hive) {
+      const held = G.hivesHeld(game, ev.p), all = G.hives(game).length;
+      const tally = all > 1 ? ` Now holding ${held} of ${all}.` : '';
+      UI.toast((ev.hiveTaken ? `${name} surrounded and took a 2nd base!` : `${name} claimed a 2nd base!`) + ` (+${G.hiveBonus(game)} defense each)` + tally, pl.color);
+    }
     if (ev.blast) {
       const d = ev.destroyed || [0, 0];
       const lostTxt = [0, 1].filter(q => d[q]).map(q => `${game.players[q].name} lost ${d[q]} cell${d[q] > 1 ? 's' : ''}`).join(', ');

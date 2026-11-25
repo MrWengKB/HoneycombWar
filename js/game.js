@@ -26,7 +26,9 @@
     if (L <= 4) return L;
     if (L <= 12) return L - Math.ceil((L - 4) / 2);
     return 8;
-  }    // 2 rounds with a full board and no capture
+  }
+  // How many 2nd bases: 1, then 2 from level 50, 3 from level 100, 4 from level 200 and 5 (the most) from level 350.
+  function hivesForLevel(level) { return level >= 350 ? 5 : level >= 200 ? 4 : level >= 100 ? 3 : level >= 50 ? 2 : 1; }    // 2 rounds with a full board and no capture
 
   /* ---------- seeded random numbers, so a saved game continues the same way ---------- */
   function rng(state) {
@@ -53,7 +55,7 @@
   function minesForSide(side) { return Math.floor(side / 3); }
   function minesForLevel(level) { return minesForSide(sideForLevel(level)); }
   function levelInfo(level) {
-    return { level, side: sideForLevel(level), items: itemsForLevel(level), mines: minesForLevel(level), attack: BASE_ATTACK * level, defense: BASE_DEFENSE * level };
+    return { level, side: sideForLevel(level), items: itemsForLevel(level), mines: minesForLevel(level), hives: hivesForLevel(level), attack: BASE_ATTACK * level, defense: BASE_DEFENSE * level };
   }
 
   /* ---------- board ---------- */
@@ -133,9 +135,9 @@
     state.bases[0] = indexOf(state, q0, R - 1);
     state.bases[1] = indexOf(state, -q0, -(R - 1));
     state.bases.forEach((b, p) => { state.cells[b].owner = p; state.cells[b].base = p; });
-    // The centre "hive": a second base for whoever takes it. It can't be attacked, only surrounded.
-    state.hive = indexOf(state, 0, 0);
-    state.cells[state.hive].hive = true;
+    // The "hives": 2nd bases for whoever takes them. They can't be attacked, only surrounded.
+    state.hives = hiveSpots(state, opts.hives != null ? opts.hives : state.mode === 'friend' ? 1 : hivesForLevel(level));
+    state.hives.forEach(h => { state.cells[h].hive = true; });
     state.hiveBonus = hiveBonusFor(strength);
 
     // Hidden items
@@ -156,7 +158,7 @@
     const mines = opts.mines != null ? opts.mines
       : state.mode === 'friend' ? (state.itemSet === 'positive' ? 0 : minesForSide(side)) : minesForLevel(level);
     const keep = new Set();
-    [state.bases[0], state.bases[1], state.hive].forEach(b => { keep.add(b); nbrs(state, b).forEach(j => keep.add(j)); });
+    state.bases.concat(state.hives).forEach(b => { keep.add(b); nbrs(state, b).forEach(j => keep.add(j)); });
     const spots = state.cells.map((c, i) => i).filter(i => !state.cells[i].item && !keep.has(i) && !nbrs(state, i).some(j => keep.has(j)));
     const placed = [];
     for (let k = 0; k < mines && spots.length; k++) {
@@ -169,6 +171,26 @@
     state.mineCount = placed.length;
     state.maxRounds = 3 * state.cells.length;
     return state;
+  }
+
+  // Where the 2nd bases go, always point-symmetric so neither side is favoured.
+  // 1: the centre. 2: the centre row at the thirds. 3: the centre row at the quarters.
+  // 4: halfway between the centre and the middle of each of the 4 sides without a base. 5: those 4 plus the centre.
+  function hiveSpots(state, n) {
+    const R = state.side - 1;
+    let pts;
+    if (n >= 4) {
+      const a = Math.round(R / 2), b = Math.round(R / 4), c = Math.floor(R / 4);
+      pts = [[a, -b], [-a, b], [b, c], [-b, -c]];
+      if (n >= 5) pts.push([0, 0]);
+    } else if (n === 3) {
+      const a = Math.round(R / 2);
+      pts = [[-a, 0], [0, 0], [a, 0]];
+    } else if (n === 2) {
+      const a = Math.round(R / 3);
+      pts = [[-a, 0], [a, 0]];
+    } else pts = [[0, 0]];
+    return pts.map(([q, r]) => indexOf(state, q, r)).filter(i => i >= 0);
   }
 
   /* ---------- moves ---------- */
@@ -188,11 +210,18 @@
     return !!(g && g.by === 1 - p && g.cells.indexOf(i) !== -1);
   }
   function hiveOpen(state) { return round(state) >= HIVE_ROUND; }
-  function hiveOwner(state) { return state.hive >= 0 && state.hive !== undefined ? state.cells[state.hive].owner : -1; }
+  // Saves from before v1.9.8 have a single state.hive
+  function hives(state) { return state.hives || (state.hive >= 0 ? [state.hive] : []); }
+  // Owner of a 2nd base (the first one if none is given)
+  function hiveOwner(state, h) {
+    const i = h === undefined ? hives(state)[0] : h;
+    return i >= 0 && i !== undefined ? state.cells[i].owner : -1;
+  }
+  function hivesHeld(state, p) { return hives(state).filter(h => state.cells[h].owner === p).length; }
   // Attack and defense including the centre bonus
   function hiveBonus(state) { return state.hiveBonus || hiveBonusFor(state.level || 1); }
   function atk(state, p) { return state.players[p].atk; }
-  function def(state, p) { return state.players[p].def + (hiveOwner(state) === p ? hiveBonus(state) : 0); }
+  function def(state, p) { return state.players[p].def + hivesHeld(state, p) * hiveBonus(state); }
   function maxRounds(state) { return state.maxRounds || 3 * state.cells.length; }
   function round(state) { return Math.floor(state.moves / 2) + 1; }
   // A cell changes hands to p. If it held a boost (+attack/+defense) found by the old owner,
@@ -318,7 +347,7 @@
     const seen = new Uint8Array(state.cells.length);
     const areas = [];
     const theirBase = state.bases[1 - p];
-    const theirHive = hiveOwner(state) === 1 - p ? state.hive : -2;
+    const theirHives = new Set(hives(state).filter(h => state.cells[h].owner === 1 - p));
     for (let i = 0; i < state.cells.length; i++) {
       if (seen[i] || state.cells[i].owner === p || state.cells[i].owner === -2) continue;
       const area = [];
@@ -327,7 +356,7 @@
       seen[i] = 1;
       while (stack.length) {
         const k = stack.pop();
-        if (k === theirBase || k === theirHive) ok = false;
+        if (k === theirBase || theirHives.has(k)) ok = false;
         area.push(k);
         for (const j of nbrs(state, k)) {
           if (!seen[j] && state.cells[j].owner !== p && state.cells[j].owner !== -2) { seen[j] = 1; stack.push(j); }
@@ -385,13 +414,15 @@
         if (state.cells[k].owner !== p && sweepable(state, k, p, strong)) { occupy(state, k, p, ev); ev.enclosed++; }
       }
     }
-    // Surrounding the opponent's centre base takes it
-    if (hiveOwner(state) === 1 - p && !guarded(state, state.hive, p) &&
-        nbrs(state, state.hive).every(j => state.cells[j].owner === p)) {
-      takeOver(state, state.hive, p, ev);
-      ev.hiveTaken = true;
+    // Surrounding one of the opponent's 2nd bases takes it
+    for (const h of hives(state)) {
+      if (state.cells[h].owner === 1 - p && !guarded(state, h, p) &&
+          nbrs(state, h).every(j => state.cells[j].owner === p)) {
+        takeOver(state, h, p, ev);
+        ev.hiveTaken = true;
+      }
+      if (ev.changed.indexOf(h) !== -1) ev.hive = true;
     }
-    if (ev.changed.indexOf(state.hive) !== -1) ev.hive = true;
     if (ev.taken || ev.blast) ev.captured = true;
     state.guard = ev.takenCells ? { by: p, cells: ev.takenCells.slice() } : null;
 
@@ -516,7 +547,7 @@
   }
 
   root.HexGame = {
-    HIVE_ROUND, hiveBonus, hiveBonusFor, hiveOpen, hiveOwner, atk, def,
+    HIVE_ROUND, hiveBonus, hiveBonusFor, hiveOpen, hiveOwner, hives, hivesHeld, hivesForLevel, hiveSpots, atk, def,
     DIRS, ITEM_TYPES, ITEM_SETS, MIN_SIDE, MAX_SIDE, DRAW_MOVES,
     sideForLevel, cellCount, maxItems, itemsForLevel, levelInfo, minesForLevel, minesForSide,
     createGame, restore, clone, nbrs, indexOf, legalMoves, moveKind, previewAttack, damage,

@@ -87,12 +87,12 @@
         }
         el('polygon', { points: star.join(' '), class: 'star' }, n.g);
       });
-      // centre base marker
-      if (state.hive >= 0 && state.hive !== undefined) {
-        const n = this.nodes[state.hive];
+      // 2nd base markers
+      G.hives(state).forEach(h => {
+        const n = this.nodes[h];
         el('polygon', { points: hexPoints(n.x, n.y, S * 0.55), class: 'hivemark' }, n.g);
         el('polygon', { points: hexPoints(n.x, n.y, S * 0.25), class: 'hivecore' }, n.g);
-      }
+      });
       this.fit();
       this.update();
     }

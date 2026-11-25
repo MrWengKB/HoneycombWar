@@ -113,7 +113,7 @@ test('surrounding the base wins', () => {
 test('full board with no capture for 4 moves: more cells wins, equal is a draw', () => {
   const mk = extra => {
     const s = blank();
-    s.hive = -1; // no centre bonus in this test
+    s.hives = []; // no centre bonus in this test
     s.cells.forEach((c, i) => { if (c.owner === -1) c.owner = c.r > 0 || (c.r === 0 && c.q < extra) ? 0 : 1; });
     return s;
   };
@@ -182,7 +182,7 @@ test('round limit is 3x the cell count, then most cells wins', () => {
   assert.equal(s.reason, 'limit'); assert.notEqual(s.status, 'playing');
 });
 test('hopeless: no grey cells, no damage, and the opponent can capture', () => {
-  const s = blank(); s.hive = -1;
+  const s = blank(); s.hives = [];
   s.cells.forEach(c => { if (c.owner === -1) c.owner = c.r > 0 ? 0 : 1; });
   assert.equal(G.hopeless(s, 0), false); // equal stats: nobody can capture
   s.players[1].atk = 3;
@@ -216,7 +216,7 @@ test('pass: both players passing ends on cell count', () => {
 });
 test('centre base: claimable from round 3, gives +1/+1, taken only by surrounding', () => {
   const s = blank();
-  const h = s.hive;
+  const h = s.hives[0];
   assert.equal(s.cells[h].q, 0); assert.equal(s.cells[h].r, 0); assert.ok(!s.cells[h].item);
   const nb = G.nbrs(s, h);
   s.cells[nb[0]].owner = 0;
@@ -234,14 +234,14 @@ test('centre base: claimable from round 3, gives +1/+1, taken only by surroundin
   G.play(s, nb[0]);
   assert.equal(s.cells[h].owner, 1);
   assert.equal(G.def(s, 1), 2); assert.equal(G.def(s, 0), 1);
-  const lv = G.createGame({ level: 9, seed: 2 }); lv.cells[lv.hive].owner = 0;
+  const lv = G.createGame({ level: 9, seed: 2 }); lv.cells[lv.hives[0]].owner = 0;
   assert.equal(G.def(lv, 0), 15); // level 9: +6 defense
   assert.deepEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 40].map(G.hiveBonusFor), [1, 2, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 8]);
 });
 test('an area holding the opponent centre base is not enclosed', () => {
   const s = blank();
   s.moves = 4;
-  const h = s.hive;
+  const h = s.hives[0];
   s.cells[h].owner = 1;
   const ring = G.nbrs(s, h);
   ring.slice(1).forEach(j => { s.cells[j].owner = 0; });
@@ -252,7 +252,7 @@ test('an area holding the opponent centre base is not enclosed', () => {
 });
 // Put a mine on a cell next to the bottom base's own cells but away from bases and the centre
 const mineSpot = s => {
-  const near = new Set(); [s.bases[0], s.bases[1], s.hive].forEach(b => { near.add(b); G.nbrs(s, b).forEach(j => near.add(j)); });
+  const near = new Set(); s.bases.concat(s.hives).forEach(b => { near.add(b); G.nbrs(s, b).forEach(j => near.add(j)); });
   return s.cells.findIndex((c, i) => !near.has(i) && G.nbrs(s, i).length === 6 && !G.nbrs(s, i).some(j => near.has(j)) && c.r > 0);
 };
 test('mines: a third of the side, never near a base or the centre', () => {
@@ -261,7 +261,7 @@ test('mines: a third of the side, never near a base or the centre', () => {
       const s = G.createGame({ level, seed });
       const mines = s.cells.map((c, i) => c.mine ? i : -1).filter(i => i >= 0);
       assert.equal(mines.length, want);
-      const near = new Set(); [s.bases[0], s.bases[1], s.hive].forEach(b => { near.add(b); G.nbrs(s, b).forEach(j => near.add(j)); });
+      const near = new Set(); s.bases.concat(s.hives).forEach(b => { near.add(b); G.nbrs(s, b).forEach(j => near.add(j)); });
       mines.forEach(m => { assert.ok(!near.has(m)); G.nbrs(s, m).forEach(j => assert.ok(!near.has(j))); assert.ok(!s.cells[m].item); });
       if (mines.length === 2) assert.ok(G.dist(s, mines[0], mines[1]) >= 3);
     }
@@ -349,5 +349,62 @@ test('cells are counted when the counts stay the same for 3 rounds', () => {
   }
   assert.equal(t.status !== 'playing', true);
   assert.ok(['standstill', 'surround'].includes(t.reason), t.reason);
+});
+test('2nd bases: 1, then 2 at level 50, 3 at 100, 4 at 200, point-symmetric and away from the edge and bases', () => {
+  assert.deepEqual([1, 49, 50, 99, 100, 199, 200, 349, 350, 900].map(G.hivesForLevel), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
+  for (const level of [1, 50, 100, 200, 350]) {
+    const s = G.createGame({ level, seed: 3 });
+    assert.equal(s.hives.length, G.hivesForLevel(level));
+    const pts = s.hives.map(h => s.cells[h].q + ',' + s.cells[h].r);
+    s.hives.forEach(h => {
+      const c = s.cells[h];
+      assert.ok(pts.includes(-c.q + ',' + -c.r), 'symmetric ' + level);
+      assert.equal(G.nbrs(s, h).length, 6);
+      s.bases.forEach(b => assert.ok(G.dist(s, h, b) >= 3));
+      assert.ok(!c.item && !c.mine);
+    });
+    if (level === 50 || level === 100) s.hives.forEach(h => assert.equal(s.cells[h].r, 0));
+  }
+  assert.equal(G.createGame({ mode: 'friend', level: 1, strength: 300, seed: 1 }).hives.length, 1);
+});
+test('several 2nd bases: each adds its defense, and each is taken by surrounding it', () => {
+  const s = blank({ level: 100, side: 15, hives: 3 });
+  const [a, b] = s.hives;
+  const d0 = G.def(s, 0);
+  s.cells[a].owner = 0; s.cells[b].owner = 0;
+  assert.equal(G.def(s, 0), d0 + 2 * G.hiveBonus(s));
+  assert.equal(G.hivesHeld(s, 0), 2);
+  // player 1 surrounds b: it changes hands, a stays
+  const ring = G.nbrs(s, b);
+  ring.slice(1).forEach(j => { s.cells[j].owner = 1; });
+  s.cells[G.nbrs(s, ring[0]).find(j => s.cells[j].owner === -1 && !ring.includes(j) && j !== b)].owner = 1;
+  s.moves = 10; s.turn = 1;
+  const ev = G.play(s, ring[0]);
+  assert.ok(ev.ok && ev.hiveTaken && ev.hive);
+  assert.equal(s.cells[b].owner, 1); assert.equal(s.cells[a].owner, 0);
+  assert.equal(G.hivesHeld(s, 1), 1);
+});
+test('old saves with a single centre base still work', () => {
+  const s = blank();
+  const h = s.hives[0];
+  delete s.hives; s.hive = h;
+  assert.deepEqual(G.hives(s), [h]);
+  s.cells[h].owner = 1;
+  assert.equal(G.hiveOwner(s), 1); assert.equal(G.def(s, 1), s.players[1].def + G.hiveBonus(s));
+  assert.ok(HexCPU.chooseMove(s) >= 0);
+});
+test('CPU picks a plan with several 2nd bases, and a new one once its 2nd base is taken', () => {
+  const plans = new Set();
+  for (let k = 0; k < 40; k++) {
+    const s = G.createGame({ level: 200, seed: k, first: 1, players: [{}, { cpu: true }] });
+    HexCPU.chooseMove(s);
+    const aim = s.cpuAim[1];
+    assert.ok(aim === 'base' || s.hives.includes(aim));
+    plans.add(aim);
+    if (aim !== 'base') { s.cells[aim].owner = 1; HexCPU.chooseMove(s); assert.notEqual(s.cpuAim[1], aim); }
+  }
+  assert.ok(plans.size >= 4, [...plans].join());
+  const one = G.createGame({ level: 9, seed: 1, first: 1, players: [{}, { cpu: true }] });
+  HexCPU.chooseMove(one); assert.equal(one.cpuAim, undefined);
 });
 console.log(`\n${n} tests passed`);

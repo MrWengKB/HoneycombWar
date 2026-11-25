@@ -1,3 +1,8 @@
+# v1.9.8
+- More 2nd bases at high levels: 2 from level 50 (middle row, at the thirds), 3 from level 100 (middle row, at the quarters), 4 from level 200 (halfway between the centre and each side without a base) and 5 from level 350 (those 4 plus the centre)
+- Each 2nd base gives its own extra defense, is taken only by surrounding it, and one player can hold them all
+- With several 2nd bases the CPU picks a plan at random: go straight for your base, or race for one of the 2nd bases
+
 # v1.9.7
 - Android: if Google sign-in fails, the message now shows the app's package and signing SHA-1, so it can be checked against Google Cloud
 - Android: a sign-in error is no longer reported as "cancelled"
