@@ -9,7 +9,7 @@ val webAssetsDir = layout.buildDirectory.dir("webassets")
 
 val copyWeb by tasks.registering(Sync::class) {
     from(webRoot) {
-        include("index.html", "style.css", "favicon.svg", "privacy.html", "js/**", "music/**")
+        include("index.html", "style.css", "favicon.svg", "privacy.html", "delete-data.html", "js/**", "music/**")
     }
     into(webAssetsDir.map { it.dir("www") })
 }
