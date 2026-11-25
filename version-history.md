@@ -1,3 +1,7 @@
+# v1.8.4
+- Safer saving: when two saves differ, the one with more games played is kept, so a new device can never replace your progress
+- If Google Drive can't be read, the game no longer writes to it until it can
+
 # v1.8.3
 - Google Play version of the app (updates come from Play, so it has no "Check for updates")
 

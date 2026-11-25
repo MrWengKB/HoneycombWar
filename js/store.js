@@ -18,6 +18,15 @@
   function blank() {
     return { level: 1, wins: 0, losses: 0, draws: 0, best: 1, prefs: {}, current: null, updatedAt: 0 };
   }
+  // Which copy to keep: the one with more games played, then the newer one.
+  // So a fresh profile on a new device can never replace real progress.
+  const played = d => (d.wins || 0) + (d.losses || 0) + (d.draws || 0);
+  function better(a, b) {
+    if (!a) return b; if (!b) return a;
+    if (played(a) !== played(b)) return played(a) > played(b) ? a : b;
+    return (a.updatedAt || 0) >= (b.updatedAt || 0) ? a : b;
+  }
+  let cloudBlocked = false; // Drive couldn't be read: don't write to it until it can
   function setSync(s) { syncState = s; listeners.forEach(f => f(s)); }
 
   async function readLocal(acc) {
@@ -39,6 +48,7 @@
     const local = await readLocal(acc);
     if (local.tampered) warnings.push('localTampered');
     let best = local.data;
+    let cloudRead = acc === 'local'; // true once Drive was read successfully (or there is no Drive)
     if (acc !== 'local') {
       if (window.Auth.token()) {
         try {
@@ -46,13 +56,14 @@
           if (text) {
             try {
               const cloud = await window.HWCrypto.open(text, acc);
-              if (!best || (cloud.updatedAt || 0) > (best.updatedAt || 0)) best = cloud;
+              best = better(best, cloud);
             } catch (e) { warnings.push('cloudTampered'); }
           } else if (!best) {
             // First sign-in with this account: keep the progress made without signing in.
             const guest = await readLocal('local');
             if (guest.data) best = guest.data;
           }
+          cloudRead = true;
           setSync('saved');
         } catch (e) {
           setSync(e.code === 'auth' ? 'expired' : 'error');
@@ -62,18 +73,21 @@
         setSync('expired');
       }
     } else setSync('local');
+    cloudBlocked = !cloudRead;
     profile = Object.assign(blank(), best || {});
-    if (!best || local.tampered) await save(true);
+    // Never push a fresh profile to Drive when Drive couldn't be read: it could replace real progress there
+    if (!best || local.tampered) await save(true, !cloudRead);
     return { profile, warnings };
   }
 
   // Save now (locally) and soon (to Drive).
-  async function save(immediateCloud) {
+  async function save(immediateCloud, localOnly) {
     if (!profile) return;
-    profile.updatedAt = Date.now();
+    profile.updatedAt = localOnly ? 0 : Date.now();
     const acc = account();
     const text = await writeLocal(acc, profile);
     if (acc === 'local') { setSync('local'); return; }
+    if (localOnly || cloudBlocked) return;
     clearTimeout(timer);
     const push = async () => {
       if (!window.Auth.token()) { setSync('expired'); return; }
@@ -88,8 +102,9 @@
     await window.Auth.signIn();
     const mine = profile;
     const res = await load();
-    if (mine && (mine.updatedAt || 0) > (res.profile.updatedAt || 0)) { profile = mine; await save(true); }
-    else await save(true);
+    if (cloudBlocked) return profile;
+    if (mine && better(mine, res.profile) === mine && mine !== res.profile) profile = mine;
+    await save(true);
     return profile;
   }
 
