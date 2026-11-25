@@ -40,7 +40,7 @@
   function appToken() {
     return new Promise((resolve, reject) => {
       window.hwSignedIn = token => resolve(token);
-      window.hwSignInFailed = code => reject(Object.assign(new Error(code), { code }));
+      window.hwSignInFailed = (code, detail) => reject(Object.assign(new Error(code), { code, detail: detail || '' }));
       window.HWApp.signIn();
     });
   }
@@ -48,7 +48,7 @@
     const token = await appToken();
     const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: 'Bearer ' + token } })
       .then(r => r.json()).catch(() => ({}));
-    if (!info.email) throw Object.assign(new Error('userinfo'), { code: 'popup' });
+    if (!info.email) throw Object.assign(new Error('userinfo'), { code: 'popup', detail: 'could not read your Google email' });
     write({ token, exp: Date.now() + 3500 * 1000, email: info.email, name: info.name || '' });
     return token;
   }

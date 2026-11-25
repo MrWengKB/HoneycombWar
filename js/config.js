@@ -4,7 +4,7 @@
  * The game only asks for drive.file: it can see only the files it creates itself.
  */
 window.HW_CONFIG = {
-  version: '1.9.2',
+  version: '1.9.3',
   googleClientId: '420207963838-f58s3508rduj67h3uf35h44m9mf1nb12.apps.googleusercontent.com',
   driveFolder: 'Honeycomb War',
   saveFile: 'honeycombwar.save'

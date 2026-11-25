@@ -32,11 +32,11 @@
       await enterMenu();
     } catch (e) {
       msg.hidden = false;
-      msg.textContent = {
+      msg.textContent = ({
         gsi: 'Could not load Google sign-in. Check your internet connection.',
         scope: 'Please allow access to Google Drive, so your game can be saved.',
         denied: 'Sign-in was cancelled.'
-      }[e.code] || 'Sign-in did not finish. Please try again.';
+      }[e.code] || 'Sign-in did not finish. Please try again.') + (e.detail ? ` (${e.detail})` : '');
     }
   }
   async function guestFlow() {
@@ -98,7 +98,7 @@
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'link'; b.textContent = 'Reconnect';
       b.addEventListener('click', async () => {
-        try { await window.Store.reconnect(); renderMenu(); } catch (e) { UI.toast('Sign-in did not finish.'); }
+        try { await window.Store.reconnect(); renderMenu(); } catch (e) { UI.toast('Sign-in did not finish.' + (e.detail ? ` (${e.detail})` : '')); }
       });
       bar.appendChild(b);
     }
@@ -556,7 +556,7 @@
         show('welcome');
       } else {
         try { await window.Auth.signIn(); window.Store.setMode('google'); await enterMenu(); }
-        catch (e) { UI.toast('Sign-in did not finish.'); }
+        catch (e) { UI.toast('Sign-in did not finish.' + (e.detail ? ` (${e.detail})` : '')); }
       }
     });
     window.Store.onSync(renderSync);

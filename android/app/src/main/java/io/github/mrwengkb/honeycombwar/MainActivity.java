@@ -31,6 +31,7 @@ import androidx.webkit.WebViewAssetLoader;
 import com.google.android.gms.auth.api.identity.AuthorizationRequest;
 import com.google.android.gms.auth.api.identity.AuthorizationResult;
 import com.google.android.gms.auth.api.identity.Identity;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
 
 import org.json.JSONArray;
@@ -192,13 +193,13 @@ public class MainActivity extends Activity {
                         try {
                             startIntentSenderForResult(result.getPendingIntent().getIntentSender(), REQ_SIGN_IN, null, 0, 0, 0);
                         } catch (IntentSender.SendIntentException e) {
-                            signInFailed("popup");
+                            signInFailed("popup", e);
                         }
                     } else {
                         signedIn(result);
                     }
                 })
-                .addOnFailureListener(e -> signInFailed("popup"));
+                .addOnFailureListener(e -> signInFailed("popup", e));
     }
 
     @Override
@@ -206,23 +207,28 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode != REQ_SIGN_IN) return;
-        if (resultCode != RESULT_OK || data == null) { signInFailed("denied"); return; }
+        if (data == null) { signInFailed(resultCode == RESULT_CANCELED ? "denied" : "popup", "result " + resultCode); return; }
         try {
             signedIn(Identity.getAuthorizationClient(this).getAuthorizationResultFromIntent(data));
         } catch (Exception e) {
-            signInFailed("popup");
+            signInFailed(resultCode == RESULT_CANCELED ? "denied" : "popup", e);
         }
     }
 
     private void signedIn(AuthorizationResult result) {
         String token = result.getAccessToken();
-        if (token == null) { signInFailed("popup"); return; }
-        if (!result.getGrantedScopes().contains(DRIVE_FILE)) { signInFailed("scope"); return; }
+        if (token == null) { signInFailed("popup", "no access token"); return; }
+        if (!result.getGrantedScopes().contains(DRIVE_FILE)) { signInFailed("scope", "Drive not allowed"); return; }
         webView.evaluateJavascript("window.hwSignedIn && window.hwSignedIn(" + JSONObject.quote(token) + ")", null);
     }
 
-    private void signInFailed(String code) {
-        webView.evaluateJavascript("window.hwSignInFailed && window.hwSignInFailed(" + JSONObject.quote(code) + ")", null);
+    private void signInFailed(String code, Exception e) {
+        // ApiException messages start with Google's status code, e.g. "10: " = this app's package/SHA-1 isn't registered
+        String detail = e instanceof ApiException ? ((ApiException) e).getStatusCode() + ": " + e.getMessage() : String.valueOf(e.getMessage());
+        signInFailed(code, detail);
+    }
+    private void signInFailed(String code, String detail) {
+        webView.evaluateJavascript("window.hwSignInFailed && window.hwSignInFailed(" + JSONObject.quote(code) + "," + JSONObject.quote(detail == null ? "" : detail) + ")", null);
     }
 
     // ---------- check for updates ----------

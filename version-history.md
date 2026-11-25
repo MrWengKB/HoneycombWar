@@ -1,3 +1,6 @@
+# v1.9.3
+- If Google sign-in fails in the app, the message now shows Google's reason, to help fix it
+
 # v1.9.2
 - Mines: a third of the cells per side, rounded down (1 on the smallest board, up to 5 on the biggest)
 
