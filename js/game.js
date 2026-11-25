@@ -48,8 +48,11 @@
     const side = sideForLevel(level);
     return Math.min(maxItems(side), Math.floor(cellCount(side) * 0.1) + level);
   }
+  // Mines: 1 up to level 15, 2 from level 16. Friend games: by board size (2 from 8 cells per side), none with positive items only.
+  function minesForLevel(level) { return level >= 16 ? 2 : 1; }
+  function minesForSide(side) { return side >= 8 ? 2 : 1; }
   function levelInfo(level) {
-    return { level, side: sideForLevel(level), items: itemsForLevel(level), attack: BASE_ATTACK * level, defense: BASE_DEFENSE * level };
+    return { level, side: sideForLevel(level), items: itemsForLevel(level), mines: minesForLevel(level), attack: BASE_ATTACK * level, defense: BASE_DEFENSE * level };
   }
 
   /* ---------- board ---------- */
@@ -146,6 +149,23 @@
       state.cells[free[k]].item = { type, value };
     }
     state.itemCount = want;
+
+    // Hidden mines. A blast never reaches a base, the centre base or the cells around them,
+    // so a base can always still be surrounded. Two mines are at least 3 cells apart.
+    const mines = opts.mines != null ? opts.mines
+      : state.mode === 'friend' ? (state.itemSet === 'positive' ? 0 : minesForSide(side)) : minesForLevel(level);
+    const keep = new Set();
+    [state.bases[0], state.bases[1], state.hive].forEach(b => { keep.add(b); nbrs(state, b).forEach(j => keep.add(j)); });
+    const spots = state.cells.map((c, i) => i).filter(i => !state.cells[i].item && !keep.has(i) && !nbrs(state, i).some(j => keep.has(j)));
+    const placed = [];
+    for (let k = 0; k < mines && spots.length; k++) {
+      const ok = spots.filter(i => placed.every(m => dist(state, i, m) >= 3));
+      if (!ok.length) break;
+      const i = ok[randInt(state, 0, ok.length - 1)];
+      state.cells[i].mine = true;
+      placed.push(i);
+    }
+    state.mineCount = placed.length;
     state.maxRounds = 3 * state.cells.length;
     return state;
   }
@@ -157,7 +177,7 @@
   function moveKind(state, i, p) {
     const c = state.cells[i];
     if (!c || state.status !== 'playing') return null;
-    if (c.owner === -1) return touches(state, i, p) && (!c.hive || hiveOpen(state)) ? 'claim' : null;
+    if (c.owner === -1) return touches(state, i, p) && (!c.hive || hiveOpen(state)) ? 'claim' : null; // owner -2: blown up
     if (c.owner === 1 - p && c.base === undefined && !c.hive && !guarded(state, i, p)) return touches(state, i, p) ? 'attack' : null;
     return null;
   }
@@ -260,6 +280,37 @@
     }
   }
 
+  // A mine goes off: the cell and the cells around it turn black for good. Whoever owned them loses
+  // them (and any +attack/+defense found there); walls and unfound items there are gone.
+  function explode(state, i, p, ev) {
+    const blast = [i].concat(nbrs(state, i));
+    ev.blast = [];
+    for (const k of blast) {
+      const c = state.cells[k];
+      if (c.owner === -2) continue;
+      const old = c.owner;
+      const it = c.item;
+      if (old >= 0 && it && c.seen && !it.lost && it.by === old && (it.type === 'atk+' || it.type === 'def+')) {
+        it.lost = true;
+        const pl = state.players[old];
+        if (it.type === 'atk+') pl.atk = Math.max(0, pl.atk - it.value);
+        else pl.def = Math.max(0, pl.def - it.value);
+        ev.lost = ev.lost || [];
+        ev.lost.push({ idx: k, type: it.type, value: it.value, p: old });
+      }
+      if (old === 0 || old === 1) { ev.destroyed = ev.destroyed || [0, 0]; ev.destroyed[old]++; }
+      c.owner = -2;
+      c.walls = 0;
+      c.mine = false;
+      if (it && !c.seen) c.item = null;
+      ev.blast.push(k);
+      if (ev.changed.indexOf(k) === -1) ev.changed.push(k);
+    }
+    state.cells[i].blew = true;
+    if (ev.takenCells) ev.takenCells = ev.takenCells.filter(k => state.cells[k].owner !== -2);
+    if (ev.takenCells && !ev.takenCells.length) delete ev.takenCells;
+  }
+
   // Areas of cells that are not p's, closed in by p's cells (the board edge also closes an area).
   // An area holding the opponent's base is their home ground, never enclosed.
   function enclosedAreas(state, p) {
@@ -268,7 +319,7 @@
     const theirBase = state.bases[1 - p];
     const theirHive = hiveOwner(state) === 1 - p ? state.hive : -2;
     for (let i = 0; i < state.cells.length; i++) {
-      if (seen[i] || state.cells[i].owner === p) continue;
+      if (seen[i] || state.cells[i].owner === p || state.cells[i].owner === -2) continue;
       const area = [];
       let ok = true;
       const stack = [i];
@@ -278,7 +329,7 @@
         if (k === theirBase || k === theirHive) ok = false;
         area.push(k);
         for (const j of nbrs(state, k)) {
-          if (!seen[j] && state.cells[j].owner !== p) { seen[j] = 1; stack.push(j); }
+          if (!seen[j] && state.cells[j].owner !== p && state.cells[j].owner !== -2) { seen[j] = 1; stack.push(j); }
         }
       }
       if (ok) areas.push(area);
@@ -308,7 +359,8 @@
     const fullBefore = emptyCount(state) === 0;
 
     if (kind === 'claim') {
-      occupy(state, i, p, ev);
+      if (state.cells[i].mine) explode(state, i, p, ev); // taking a mine cell directly sets it off
+      else occupy(state, i, p, ev);
     } else {
       const pre = previewAttack(state, i, p);
       ev.dmg = pre.dmg;
@@ -321,6 +373,7 @@
         ev.wallsLeft = c.walls;
       } else if (pre.result === 'capture') {
         takeOver(state, i, p, ev);
+        if (c.mine) explode(state, i, p, ev); // a mine left by a ring or an enclosure goes off when captured
       }
     }
 
@@ -338,7 +391,7 @@
       ev.hiveTaken = true;
     }
     if (ev.changed.indexOf(state.hive) !== -1) ev.hive = true;
-    if (ev.taken) ev.captured = true;
+    if (ev.taken || ev.blast) ev.captured = true;
     state.guard = ev.takenCells ? { by: p, cells: ev.takenCells.slice() } : null;
 
     state.moves++;
@@ -430,7 +483,7 @@
   /* ---------- copies ---------- */
   function clone(state, hideItems) {
     const s = JSON.parse(JSON.stringify(state));
-    if (hideItems) for (const c of s.cells) if (!c.seen) c.item = null;
+    if (hideItems) for (const c of s.cells) { if (!c.seen) c.item = null; c.mine = false; }
     if (state._nb) {
       Object.defineProperty(s, '_nb', { value: state._nb, enumerable: false, configurable: true, writable: true });
       Object.defineProperty(s, '_map', { value: state._map, enumerable: false, configurable: true, writable: true });
@@ -448,7 +501,7 @@
   root.HexGame = {
     HIVE_ROUND, hiveBonus, hiveBonusFor, hiveOpen, hiveOwner, atk, def,
     DIRS, ITEM_TYPES, ITEM_SETS, MIN_SIDE, MAX_SIDE, DRAW_MOVES,
-    sideForLevel, cellCount, maxItems, itemsForLevel, levelInfo,
+    sideForLevel, cellCount, maxItems, itemsForLevel, levelInfo, minesForLevel, minesForSide,
     createGame, restore, clone, nbrs, indexOf, legalMoves, moveKind, previewAttack, damage,
     play, pass, passOutcome, retire, score, guarded, hopeless, maxRounds, round, emptyCount, surrounded, enclosedAreas, dist
   };

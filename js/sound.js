@@ -72,6 +72,13 @@
     ring: t => { notes([523.3, 659.3, 784, 1046.5], t, 0.085, 0.22, 'triangle', 0.22); notes([1568, 2093, 2637], t + 0.34, 0.05, 0.15, 'sine', 0.08); },
     // enclosure: a rising sweep
     enclose: t => { tone(330, t, 0.4, 'sine', 0.2, 990); tone(495, t + 0.05, 0.4, 'sine', 0.12, 1485); },
+    // mine: a low explosion with a rumble
+    boom: t => {
+      noise(t, 0.9, 0.9, 180, 0.6);
+      noise(t, 0.25, 0.5, 900, 0.8);
+      tone(110, t, 0.7, 'sine', 0.6, 32);
+      tone(70, t + 0.05, 0.9, 'triangle', 0.35, 28);
+    },
     // pass: a soft whoosh
     pass: t => noise(t, 0.3, 0.12, 900, 0.7),
     // victory: trumpet fanfare

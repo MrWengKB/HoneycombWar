@@ -68,7 +68,7 @@
     $('#who').textContent = user ? 'Signed in as ' + (user.name || user.email) : window.HWApp ? 'Progress is saved on this phone' : 'Playing without signing in';
     $('#mLevel').textContent = p.level;
     $('#mLevelInfo').innerHTML = '';
-    [['Board', `${info.side} cells per side`], ['Hidden items', info.items], ['Start attack / defense', `${info.attack} / ${info.defense}`]]
+    [['Board', `${info.side} cells per side`], ['Hidden items', info.items], ['Mines', info.mines], ['Start attack / defense', `${info.attack} / ${info.defense}`]]
       .forEach(([k, v]) => { const d = document.createElement('div'); d.innerHTML = '<span></span><b></b>'; d.firstChild.textContent = k; d.lastChild.textContent = v; $('#mLevelInfo').appendChild(d); });
     $('#mRecord').textContent = `Wins ${p.wins} · Draws ${p.draws} · Losses ${p.losses}` + (p.best > p.level ? ` · Best level ${p.best}` : '');
     $('#btnAccount').textContent = user ? 'Sign out' : 'Sign in with Google';
@@ -144,7 +144,7 @@
     }));
   }
   function setHelp() {
-    $('#fSetHelp').textContent = { all: 'All six kinds of items.', positive: '+attack, +defense, walls and rings.', negative: '−attack and −defense only.' }[choice.fSet];
+    $('#fSetHelp').textContent = { all: 'All six kinds of items, plus hidden mines.', positive: '+attack, +defense, walls and rings. No mines.', negative: '−attack and −defense only, plus hidden mines.' }[choice.fSet] + (choice.fSet === 'positive' ? '' : ` Mines: ${G.minesForSide(Number($('#fSide').value) || 5)} (2 from 8 cells per side).`);
   }
 
   async function openCpuSetup() {
@@ -165,7 +165,7 @@
       renderMenu();
     }
     const info = G.levelInfo(p.level);
-    $('#cpuInfo').textContent = `Level ${info.level}: a board with ${info.side} cells per side, ${info.items} hidden items, and attack ${info.attack} / defense ${info.defense} for both sides.`;
+    $('#cpuInfo').textContent = `Level ${info.level}: a board with ${info.side} cells per side, ${info.items} hidden items, ${info.mines} mine${info.mines > 1 ? 's' : ''}, and attack ${info.attack} / defense ${info.defense} for both sides.`;
     const pr = prefs();
     choice.cpuMe = pr.cpuMe || COLORS[0];
     choice.cpuThem = pr.cpuThem || COLORS[1];
@@ -198,7 +198,6 @@
     seg('fFirst', pr.first || '0');
     seg('fLayout', pr.layout || 'pass');
     seg('fSet', pr.set || 'all');
-    setHelp();
     const sel = $('#fSide');
     sel.innerHTML = '';
     for (let s = G.MIN_SIDE; s <= G.MAX_SIDE; s++) {
@@ -211,8 +210,9 @@
       $('#fItemsMax').textContent = `0 to ${max}`;
       if (!keep) $('#fItems').value = Math.floor(G.cellCount(s) * 0.12);
     };
-    sel.onchange = () => syncItems(false);
+    sel.onchange = () => { syncItems(false); setHelp(); };
     syncItems(false);
+    setHelp();
     if (pr.items != null && Number(pr.side) === Number(sel.value)) $('#fItems').value = pr.items;
     $('#fStrength').value = pr.strength || 1;
     show('setupFriend');
@@ -412,6 +412,11 @@
     }
     (ev.lost || []).forEach(l => UI.toast(`${game.players[l.p].name} lost a captured cell's +${l.value} ${l.type === 'atk+' ? 'attack' : 'defense'}.`, game.players[l.p].color));
     if (ev.hive) UI.toast(ev.hiveTaken ? `${name} surrounded and took the centre base! (+${G.hiveBonus(game)} defense)` : `${name} claimed the centre base! (+${G.hiveBonus(game)} defense)`, pl.color);
+    if (ev.blast) {
+      const d = ev.destroyed || [0, 0];
+      const lostTxt = [0, 1].filter(q => d[q]).map(q => `${game.players[q].name} lost ${d[q]} cell${d[q] > 1 ? 's' : ''}`).join(', ');
+      UI.toast(`💥 ${name} hit a mine! ${ev.blast.length} cells turned black for good${lostTxt ? ` (${lostTxt})` : ''}.`, pl.color);
+    }
     if (ev.enclosed) UI.toast(`${name} enclosed an area and took ${ev.enclosed} cell${ev.enclosed > 1 ? 's' : ''}!`, pl.color);
   }
 
@@ -419,10 +424,11 @@
   function sounds(ev) {
     const list = [];
     if (ev.kind === 'pass') list.push('pass');
-    else if (ev.kind === 'claim') list.push('ding');
+    else if (ev.kind === 'claim') list.push(ev.blast ? 'boom' : 'ding');
     else if (ev.result === 'capture') list.push('clash');
     else if (ev.result === 'wall') list.push('wall');
     else list.push('bonk');
+    if (ev.blast && ev.kind === 'attack') list.push('boom');
     ev.items.forEach(it => list.push(it.type === 'atk-' || it.type === 'def-' ? 'uhoh' : it.type === 'ring' ? 'ring' : 'happy'));
     if (ev.enclosed) list.push('enclose');
     if (ev.taken && ev.kind !== 'attack') list.push('clash'); // enemy cells taken by a ring or an enclosure

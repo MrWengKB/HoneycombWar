@@ -1,3 +1,8 @@
+# v1.9.0
+- New hidden item: the mine. Take its cell directly and it blows up that cell and the 6 around it, turning them black for good
+- 1 mine up to level 15, 2 from level 16; a mine taken by a ring or an enclosure waits until the other player captures that cell
+- Explosion sound and a "Mines" line in the level info
+
 # v1.8.4
 - Safer saving: when two saves differ, the one with more games played is kept, so a new device can never replace your progress
 - If Google Drive can't be read, the game no longer writes to it until it can

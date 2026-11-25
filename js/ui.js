@@ -6,6 +6,7 @@
   const S = 20;            // hex radius in board units
   const W = Math.sqrt(3) * S;
   const EMPTY = '#e3e4e8';
+  const DEAD = '#1c1c22'; // cells blown up by a mine
 
   const $ = sel => document.querySelector(sel);
   const el = (tag, attrs, parent) => {
@@ -119,7 +120,7 @@
       const changed = new Set(st.last ? st.last.changed : []);
       st.cells.forEach((c, i) => {
         const n = this.nodes[i];
-        const col = c.owner >= 0 ? st.players[c.owner].color : EMPTY;
+        const col = c.owner >= 0 ? st.players[c.owner].color : c.owner === -2 ? DEAD : EMPTY;
         let fill = c.base !== undefined || (c.hive && c.owner >= 0) ? mix(col, '#000000', 0.18) : col;
         let cls = 'cell';
         const kind = hint && hint.moves.get(i);
@@ -133,8 +134,8 @@
         if (kind === 'attack') n.hex.style.setProperty('--hit', st.players[hint.p].color);
         n.w1.style.display = c.walls >= 1 ? '' : 'none';
         n.w2.style.display = c.walls >= 2 ? '' : 'none';
-        n.label.textContent = c.seen && c.item && c.base === undefined && !c.hive ? itemLabel(c.item) : '';
-        n.label.setAttribute('font-size', c.seen && c.item && c.item.type === 'ring' ? 18 : 11);
+        n.label.textContent = c.blew ? '✹' : c.owner !== -2 && c.seen && c.item && c.base === undefined && !c.hive ? itemLabel(c.item) : '';
+        n.label.setAttribute('font-size', c.blew ? 16 : c.seen && c.item && c.item.type === 'ring' ? 18 : 11);
       });
     }
     flash(indices) {

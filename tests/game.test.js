@@ -5,7 +5,7 @@ require('../js/cpu.js');
 const G = globalThis.HexGame;
 let n = 0;
 const test = (name, fn) => { fn(); n++; console.log('ok -', name); };
-const blank = (opts = {}) => { const s = G.createGame(Object.assign({ level: 1, items: 0, seed: 1 }, opts)); return s; };
+const blank = (opts = {}) => { const s = G.createGame(Object.assign({ level: 1, items: 0, mines: 0, seed: 1 }, opts)); return s; };
 const at = (s, q, r) => G.indexOf(s, q, r);
 const own = (s, list, p) => list.forEach(([q, r]) => { s.cells[at(s, q, r)].owner = p; });
 
@@ -249,5 +249,78 @@ test('an area holding the opponent centre base is not enclosed', () => {
   s.players[0].atk = 5;
   G.play(s, ring[0]); // capture the last neighbour: surround, not enclosure
   assert.equal(s.cells[h].owner, 0);
+});
+// Put a mine on a cell next to the bottom base's own cells but away from bases and the centre
+const mineSpot = s => {
+  const near = new Set(); [s.bases[0], s.bases[1], s.hive].forEach(b => { near.add(b); G.nbrs(s, b).forEach(j => near.add(j)); });
+  return s.cells.findIndex((c, i) => !near.has(i) && G.nbrs(s, i).length === 6 && !G.nbrs(s, i).some(j => near.has(j)) && c.r > 0);
+};
+test('mines: 1 up to level 15, 2 from 16, never near a base or the centre', () => {
+  for (const [level, want] of [[1, 1], [15, 1], [16, 2], [30, 2]]) {
+    for (let seed = 1; seed <= 20; seed++) {
+      const s = G.createGame({ level, seed });
+      const mines = s.cells.map((c, i) => c.mine ? i : -1).filter(i => i >= 0);
+      assert.equal(mines.length, want);
+      const near = new Set(); [s.bases[0], s.bases[1], s.hive].forEach(b => { near.add(b); G.nbrs(s, b).forEach(j => near.add(j)); });
+      mines.forEach(m => { assert.ok(!near.has(m)); G.nbrs(s, m).forEach(j => assert.ok(!near.has(j))); assert.ok(!s.cells[m].item); });
+      if (mines.length === 2) assert.ok(G.dist(s, mines[0], mines[1]) >= 3);
+    }
+  }
+  assert.equal(G.createGame({ mode: 'friend', side: 5, itemSet: 'positive', seed: 3 }).cells.filter(c => c.mine).length, 0);
+  assert.equal(G.createGame({ mode: 'friend', side: 8, seed: 3 }).cells.filter(c => c.mine).length, 2);
+});
+test('mines: taking the cell directly blows it and the cells around it up', () => {
+  const s = blank({ side: 7 });
+  const m = mineSpot(s);
+  s.cells[m].mine = true;
+  const ring = G.nbrs(s, m);
+  s.cells[ring[0]].owner = 0; // bottom's cell next to the mine
+  s.cells[ring[1]].owner = 1; // top's cell next to the mine
+  s.cells[ring[1]].item = { type: 'def+', value: 3, by: 1 }; s.cells[ring[1]].seen = true; s.players[1].def += 3;
+  const ev = G.play(s, m);
+  assert.ok(ev.blast); assert.equal(ev.blast.length, 7);
+  [m].concat(ring).forEach(k => assert.equal(s.cells[k].owner, -2));
+  assert.deepEqual(ev.destroyed, [1, 1]);
+  assert.equal(s.players[1].def, 1); // the +3 defense found there is lost
+  // nobody can take a black cell
+  s.cells[G.nbrs(s, ring[2]).find(j => s.cells[j].owner === -1)].owner = 1;
+  assert.equal(G.moveKind(s, m, 0), null); assert.equal(G.moveKind(s, ring[2], 1), null);
+  assert.equal(G.score(s)[0] + G.score(s)[1] + G.emptyCount(s) + 7, s.cells.length);
+});
+test('mines: a ring or an enclosure leaves it hidden; capturing it then sets it off', () => {
+  const s = blank({ side: 7 });
+  const m = mineSpot(s);
+  s.cells[m].mine = true;
+  const ring = G.nbrs(s, m);
+  const r0 = ring[0];
+  s.cells[r0].item = { type: 'ring', value: 1 };
+  s.cells[G.nbrs(s, r0).find(j => j !== m && !ring.includes(j))].owner = 0;
+  const firstNb = G.nbrs(s, r0).find(j => s.cells[j].owner === 0);
+  assert.ok(firstNb >= 0);
+  G.play(s, r0); // bottom takes the ring cell: the ring takes the mine cell without a blast
+  assert.equal(s.cells[m].owner, 0); assert.ok(s.cells[m].mine);
+  // top captures the mine cell: boom
+  s.turn = 1; s.players[1].atk = 9;
+  s.cells[G.nbrs(s, m).find(j => s.cells[j].owner !== 0 || true)].owner = 1;
+  const touching = G.nbrs(s, m).find(j => s.cells[j].owner === 1);
+  assert.ok(touching >= 0);
+  const ev = G.play(s, m);
+  assert.equal(ev.result, 'capture'); assert.ok(ev.blast);
+  assert.equal(s.cells[m].owner, -2); assert.equal(s.cells[touching].owner, -2);
+  assert.equal(s.guard, null); // nothing left to guard
+});
+test('mines: black cells close an enclosure like the board edge', () => {
+  const s = blank({ side: 7 });
+  const a = mineSpot(s);
+  // black cell a, with an empty cell e next to it; p0 owns every other neighbour of e
+  s.cells[a].owner = -2;
+  const e = G.nbrs(s, a).find(j => s.cells[j].owner === -1 && s.cells[j].base === undefined && !s.cells[j].hive);
+  G.nbrs(s, e).forEach(j => { if (j !== a && s.cells[j].base === undefined && !s.cells[j].hive && s.cells[j].owner === -1) s.cells[j].owner = 0; });
+  const areas = G.enclosedAreas(s, 0);
+  assert.ok(areas.some(ar => ar.length === 1 && ar[0] === e));
+});
+test('the CPU never sees mines', () => {
+  const s = G.createGame({ level: 3, seed: 5 });
+  assert.equal(G.clone(s, true).cells.filter(c => c.mine).length, 0);
 });
 console.log(`\n${n} tests passed`);

@@ -157,7 +157,7 @@ body.face #panel1 { transform: rotate(180deg); }
 .how p { color: var(--ink); margin: .5em 0; }
 .how .items { list-style: none; padding: 0; margin: .4em 0; display: grid; gap: 4px; }
 .ic { display: inline-block; min-width: 34px; text-align: center; border-radius: 6px; padding: 1px 4px; color: #fff; font-weight: 700; font-size: .8rem; margin-right: 6px; }
-.ic.atk { background: #d9480f; } .ic.def { background: #1971c2; } .ic.bad { background: #6c6f78; } .ic.wall { background: #5c4033; } .ic.ring { background: #2b8a3e; }
+.ic.atk { background: #d9480f; } .ic.def { background: #1971c2; } .ic.bad { background: #6c6f78; } .ic.wall { background: #5c4033; } .ic.ring { background: #2b8a3e; } .ic.mine { background: #1c1c22; }
 
 .page { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
 .page .card { max-width: none; }
