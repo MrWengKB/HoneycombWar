@@ -52,13 +52,19 @@
     if (acc !== 'local') {
       if (window.Auth.token()) {
         try {
-          const text = await window.Drive.load();
-          if (text) {
+          // There can be more than one save file (for example one restored by hand): keep the best
+          const files = await window.Drive.loadAll();
+          let bestCloud = null, bestId = null, opened = 0;
+          for (const f of files) {
             try {
-              const cloud = await window.HWCrypto.open(text, acc);
-              best = better(best, cloud);
-            } catch (e) { warnings.push('cloudTampered'); }
+              const cloud = await window.HWCrypto.open(f.text, acc);
+              opened++;
+              if (better(bestCloud, cloud) === cloud) { bestCloud = cloud; bestId = f.id; }
+            } catch (e) { /* not ours, or changed outside the game */ }
           }
+          if (files.length && !opened) warnings.push('cloudTampered');
+          if (bestId) window.Drive.use(bestId);
+          best = better(best, bestCloud);
           // First sign-in with this account on this device: progress made here without signing in counts too.
           if (!local.data) {
             const guest = await readLocal('local');

@@ -48,6 +48,27 @@
     return { headers: { 'Content-Type': 'multipart/related; boundary=' + b }, body };
   }
 
+  // Every save file the game can see: ones marked as its own, and ones named like its save file
+  // (a file restored or re-uploaded by hand in Drive may lose the mark). Newest first.
+  async function listFiles() {
+    const mark = `appProperties has { key='app' and value='${APP}' }`;
+    const named = `name=${q(cfg.saveFile)}`;
+    const r = await request('GET', `${API}/files?q=${encodeURIComponent(`(${mark} or ${named}) and trashed=false and mimeType!=${q(FOLDER_MIME)}`)}&fields=files(id,modifiedTime)&orderBy=modifiedTime desc&spaces=drive`);
+    return (r.files || []).map(f => f.id);
+  }
+  // All save files as [{ id, text }], so the caller can keep the best one.
+  async function loadAll() {
+    const ids = await listFiles();
+    const out = [];
+    for (const id of ids) {
+      try { out.push({ id, text: await request('GET', `${API}/files/${id}?alt=media`, { text: true }) }); }
+      catch (e) { if (e.code !== 'server') throw e; }
+    }
+    return out;
+  }
+  // From now on, save into this file
+  function use(id) { try { localStorage.setItem(fileKey(), id); } catch (e) { /* ignore */ } }
+
   // The encrypted save text, or null when there is none yet.
   async function load() {
     let id = await findFile();
@@ -77,5 +98,5 @@
     try { localStorage.setItem(fileKey(), made.id); } catch (e) { /* ignore */ }
   }
 
-  window.Drive = { load, save, DriveError };
+  window.Drive = { load, loadAll, use, save, DriveError };
 })();

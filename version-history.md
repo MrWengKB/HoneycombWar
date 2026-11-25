@@ -1,3 +1,6 @@
+# v1.9.1
+- If Google Drive has more than one save file (for example one restored by hand), the game reads them all and keeps the one with the most progress
+
 # v1.9.0
 - New hidden item: the mine. Take its cell directly and it blows up that cell and the 6 around it, turning them black for good
 - 1 mine up to level 15, 2 from level 16; a mine taken by a ring or an enclosure waits until the other player captures that cell
