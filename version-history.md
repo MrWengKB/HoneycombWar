@@ -1,3 +1,6 @@
+# v1.9.9
+- Smarter CPU with several 2nd bases: once you take one, it races you for the free ones instead of letting you have them, and it drops a straight-for-your-base plan while you hold more 2nd bases than it does
+
 # v1.9.8
 - More 2nd bases at high levels: 2 from level 50 (middle row, at the thirds), 3 from level 100 (middle row, at the quarters), 4 from level 200 (halfway between the centre and each side without a base) and 5 from level 350 (those 4 plus the centre)
 - Each 2nd base adds its own extra defense, is taken only by surrounding it, and one player can hold them all

@@ -23,7 +23,9 @@
     const hives = G.hives(state).map(h => {
       const ring = new Set(G.nbrs(state, h));
       const held = q => [...ring].filter(j => state.cells[j].owner === q).length;
-      return { h, owner: state.cells[h].owner, ring, mine: held(p), theirs: held(o) };
+      // how close each side has got to it
+      const near = q => Math.min(...state.cells.map((c, i) => c.owner === q ? G.dist(state, i, h) : 99));
+      return { h, owner: state.cells[h].owner, ring, mine: held(p), theirs: held(o), dMe: near(p), dThem: near(o) };
     });
     const heldBefore = G.hivesHeld(state, p);
     const aim = pickAim(state, p, hives);
@@ -47,8 +49,10 @@
       s += (G.hivesHeld(sim, p) - heldBefore) * 60;
       for (const v of hives) {
         if (v.owner !== p) {
-          // head for the one we're aiming at; with one 2nd base it's always worth heading for
-          const w = hives.length === 1 || aim === v.h ? 3 : aim === 'base' ? 0.3 : 0.8;
+          // head for the one we're aiming at (with one 2nd base it's always worth heading for), and
+          // don't leave a free one to the other side when they're as close to it as we are
+          const race = v.owner === -1 && v.dThem <= v.dMe + 1;
+          const w = hives.length === 1 || aim === v.h || race ? 3 : v.owner === -1 ? 1.2 : 0.8;
           s += (maxD - G.dist(state, m.idx, v.h)) * w;
           if (v.ring.has(m.idx)) s += v.owner === o ? 10 + v.mine * 6 : 8; // close in on it
         } else if (v.ring.has(m.idx)) s += 6 + v.theirs * 8;            // don't let ours be surrounded
@@ -66,15 +70,24 @@
     return bestIdx;
   }
 
-  // With several 2nd bases, each CPU picks a plan at random and sticks to it: go straight for the
-  // other base, or race for one 2nd base. Once that 2nd base is ours it picks a new plan.
+  // With several 2nd bases, each CPU picks a plan at random: go straight for the other base, or race
+  // for one free 2nd base. It picks again once that 2nd base is taken by anyone, and drops the
+  // straight-for-the-base plan while the other side holds more 2nd bases than it does.
   function pickAim(state, p, hives) {
     if (hives.length < 2) return null;
     state.cpuAim = state.cpuAim || [null, null];
     const cur = state.cpuAim[p];
-    const open = hives.filter(v => v.owner !== p).map(v => v.h);
-    if (cur === 'base' || open.indexOf(cur) !== -1) return cur;
-    const choices = ['base'].concat(open);
+    const free = hives.filter(v => v.owner === -1);
+    const behind = hives.filter(v => v.owner === 1 - p).length > hives.filter(v => v.owner === p).length;
+    const curOk = cur === 'base' ? !behind : free.some(v => v.h === cur) || (!free.length && hives.some(v => v.h === cur && v.owner === 1 - p));
+    if (curOk) return cur;
+    let choices = free.map(v => v.h);
+    if (!behind) choices.push('base');
+    if (!choices.length) {
+      // nothing free and we're behind: go and surround the nearest of theirs
+      const theirs = hives.filter(v => v.owner === 1 - p).sort((a, b) => a.dMe - b.dMe);
+      choices = theirs.length ? [theirs[0].h] : ['base'];
+    }
     const pick = choices[Math.floor(Math.random() * choices.length)];
     state.cpuAim[p] = pick;
     return pick;
