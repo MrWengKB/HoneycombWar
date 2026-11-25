@@ -134,8 +134,10 @@
         if (kind === 'attack') n.hex.style.setProperty('--hit', st.players[hint.p].color);
         n.w1.style.display = c.walls >= 1 ? '' : 'none';
         n.w2.style.display = c.walls >= 2 ? '' : 'none';
-        n.label.textContent = c.blew ? '✹' : c.owner !== -2 && c.seen && c.item && c.base === undefined && !c.hive ? itemLabel(c.item) : '';
-        n.label.setAttribute('font-size', c.blew ? 16 : c.seen && c.item && c.item.type === 'ring' ? 18 : 11);
+        // When the game is over, mines that never went off are shown
+        const mineShown = c.mine && st.status !== 'playing';
+        n.label.textContent = c.blew ? '✹' : mineShown ? '💣' : c.owner !== -2 && c.seen && c.item && c.base === undefined && !c.hive ? itemLabel(c.item) : '';
+        n.label.setAttribute('font-size', c.blew ? 16 : mineShown ? 20 : c.seen && c.item && c.item.type === 'ring' ? 18 : 11);
       });
     }
     flash(indices) {
