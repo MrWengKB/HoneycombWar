@@ -58,10 +58,11 @@
               const cloud = await window.HWCrypto.open(text, acc);
               best = better(best, cloud);
             } catch (e) { warnings.push('cloudTampered'); }
-          } else if (!best) {
-            // First sign-in with this account: keep the progress made without signing in.
+          }
+          // First sign-in with this account on this device: progress made here without signing in counts too.
+          if (!local.data) {
             const guest = await readLocal('local');
-            if (guest.data) best = guest.data;
+            if (guest.data) best = better(best, guest.data);
           }
           cloudRead = true;
           setSync('saved');
