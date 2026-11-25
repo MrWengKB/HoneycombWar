@@ -211,7 +211,9 @@ public class MainActivity extends Activity {
         try {
             signedIn(Identity.getAuthorizationClient(this).getAuthorizationResultFromIntent(data));
         } catch (Exception e) {
-            signInFailed(resultCode == RESULT_CANCELED ? "denied" : "popup", e);
+            // Only Google's CANCELED status (16) means the player backed out; anything else is a real error
+            boolean cancelled = e instanceof ApiException && ((ApiException) e).getStatusCode() == 16;
+            signInFailed(cancelled ? "denied" : "popup", e);
         }
     }
 
@@ -225,7 +227,27 @@ public class MainActivity extends Activity {
     private void signInFailed(String code, Exception e) {
         // ApiException messages start with Google's status code, e.g. "10: " = this app's package/SHA-1 isn't registered
         String detail = e instanceof ApiException ? ((ApiException) e).getStatusCode() + ": " + e.getMessage() : String.valueOf(e.getMessage());
-        signInFailed(code, detail);
+        // Show what Google sees, so it can be compared with the Android client in Google Cloud
+        signInFailed(code, detail + " | app " + getPackageName() + " SHA-1 " + certSha1());
+    }
+
+    /** SHA-1 of the certificate this install is signed with (Play's app signing key for Play installs) */
+    private String certSha1() {
+        try {
+            android.content.pm.Signature[] sigs;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNING_CERTIFICATES);
+                sigs = pi.signingInfo.getApkContentsSigners();
+            } else {
+                sigs = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNATURES).signatures;
+            }
+            byte[] d = java.security.MessageDigest.getInstance("SHA-1").digest(sigs[0].toByteArray());
+            StringBuilder b = new StringBuilder();
+            for (int i = 0; i < d.length; i++) b.append(i > 0 ? ":" : "").append(String.format("%02X", d[i]));
+            return b.toString();
+        } catch (Exception ex) {
+            return "unknown";
+        }
     }
     private void signInFailed(String code, String detail) {
         webView.evaluateJavascript("window.hwSignInFailed && window.hwSignInFailed(" + JSONObject.quote(code) + "," + JSONObject.quote(detail == null ? "" : detail) + ")", null);

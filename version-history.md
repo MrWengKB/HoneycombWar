@@ -1,3 +1,7 @@
+# v1.9.7
+- Android: if Google sign-in fails, the message now shows the app's package and signing SHA-1, so it can be checked against Google Cloud
+- Android: a sign-in error is no longer reported as "cancelled"
+
 # v1.9.6
 - Smarter CPU: it now races for the centre base, closes in on yours, and guards its own; its own base ring only matters once it is under attack
 
