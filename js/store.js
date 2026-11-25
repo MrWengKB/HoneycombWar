@@ -64,8 +64,9 @@
             const guest = await readLocal('local');
             if (guest.data) best = better(best, guest.data);
           }
-          cloudRead = true;
-          setSync('saved');
+          // A Drive file the game can't open is left alone rather than overwritten
+          cloudRead = !warnings.includes('cloudTampered');
+          setSync(cloudRead ? 'saved' : 'error');
         } catch (e) {
           setSync(e.code === 'auth' ? 'expired' : 'error');
           warnings.push(e.code === 'auth' ? 'expired' : 'cloudError');
