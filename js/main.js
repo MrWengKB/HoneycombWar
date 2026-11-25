@@ -467,8 +467,6 @@
     profile().current = null;
     await window.Store.save();
     refresh();
-    const hidden = g.cells.filter(c => c.mine).length;
-    if (hidden) UI.toast(`💣 Mines that never went off: ${hidden}, now shown.`);
     const n = G.score(g);
     const why = {
       surround: 'The base was surrounded.',
