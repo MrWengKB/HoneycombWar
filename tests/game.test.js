@@ -255,8 +255,8 @@ const mineSpot = s => {
   const near = new Set(); [s.bases[0], s.bases[1], s.hive].forEach(b => { near.add(b); G.nbrs(s, b).forEach(j => near.add(j)); });
   return s.cells.findIndex((c, i) => !near.has(i) && G.nbrs(s, i).length === 6 && !G.nbrs(s, i).some(j => near.has(j)) && c.r > 0);
 };
-test('mines: 1 up to level 15, 2 from 16, never near a base or the centre', () => {
-  for (const [level, want] of [[1, 1], [15, 1], [16, 2], [30, 2]]) {
+test('mines: a third of the side, never near a base or the centre', () => {
+  for (const [level, want] of [[1, 1], [5, 2], [16, 2], [17, 3], [29, 4], [44, 5]]) {
     for (let seed = 1; seed <= 20; seed++) {
       const s = G.createGame({ level, seed });
       const mines = s.cells.map((c, i) => c.mine ? i : -1).filter(i => i >= 0);
@@ -268,6 +268,10 @@ test('mines: 1 up to level 15, 2 from 16, never near a base or the centre', () =
   }
   assert.equal(G.createGame({ mode: 'friend', side: 5, itemSet: 'positive', seed: 3 }).cells.filter(c => c.mine).length, 0);
   assert.equal(G.createGame({ mode: 'friend', side: 8, seed: 3 }).cells.filter(c => c.mine).length, 2);
+  for (let side = 5; side <= 15; side++) for (let seed = 1; seed <= 30; seed++) {
+    const s = G.createGame({ mode: 'friend', side, items: G.maxItems(side), seed });
+    assert.equal(s.cells.filter(c => c.mine).length, Math.floor(side / 3), 'side ' + side);
+  }
 });
 test('mines: taking the cell directly blows it and the cells around it up', () => {
   const s = blank({ side: 7 });

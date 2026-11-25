@@ -48,9 +48,10 @@
     const side = sideForLevel(level);
     return Math.min(maxItems(side), Math.floor(cellCount(side) * 0.1) + level);
   }
-  // Mines: 1 up to level 15, 2 from level 16. Friend games: by board size (2 from 8 cells per side), none with positive items only.
-  function minesForLevel(level) { return level >= 16 ? 2 : 1; }
-  function minesForSide(side) { return side >= 8 ? 2 : 1; }
+  // Mines: a third of the cells per side, rounded down (5 → 1, 6 → 2, 9 → 3, 15 → 5).
+  // Friend games use the same rule, with none when only positive items are chosen.
+  function minesForSide(side) { return Math.floor(side / 3); }
+  function minesForLevel(level) { return minesForSide(sideForLevel(level)); }
   function levelInfo(level) {
     return { level, side: sideForLevel(level), items: itemsForLevel(level), mines: minesForLevel(level), attack: BASE_ATTACK * level, defense: BASE_DEFENSE * level };
   }

@@ -144,7 +144,7 @@
     }));
   }
   function setHelp() {
-    $('#fSetHelp').textContent = { all: 'All six kinds of items, plus hidden mines.', positive: '+attack, +defense, walls and rings. No mines.', negative: '−attack and −defense only, plus hidden mines.' }[choice.fSet] + (choice.fSet === 'positive' ? '' : ` Mines: ${G.minesForSide(Number($('#fSide').value) || 5)} (2 from 8 cells per side).`);
+    $('#fSetHelp').textContent = { all: 'All six kinds of items, plus hidden mines.', positive: '+attack, +defense, walls and rings. No mines.', negative: '−attack and −defense only, plus hidden mines.' }[choice.fSet] + (choice.fSet === 'positive' ? '' : ` Mines: ${G.minesForSide(Number($('#fSide').value) || 5)} (a third of the cells per side).`);
   }
 
   async function openCpuSetup() {

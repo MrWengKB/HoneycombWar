@@ -1,3 +1,6 @@
+# v1.9.2
+- Mines: a third of the cells per side, rounded down (1 on the smallest board, up to 5 on the biggest)
+
 # v1.9.1
 - If Google Drive has more than one save file (for example one restored by hand), the game reads them all and keeps the one with the most progress
 
