@@ -7,7 +7,7 @@
   <meta name="description" content="A turn-based strategy game on a honeycomb board. Claim cells, find hidden items, and surround the enemy base.">
   <meta name="theme-color" content="#f5b301">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=1.9.3">
+  <link rel="stylesheet" href="style.css?v=1.9.4">
 </head>
 <body>
   <!-- Welcome -->
@@ -162,21 +162,21 @@
       <p><b>Mines</b> are hidden too: a third of the cells per side, rounded down (1 on the smallest board, 5 on the biggest). Take a mine's cell directly (an empty cell or an attack) and it explodes: that cell and the 6 around it turn black, whoever held them. Black cells can't be taken by anyone, and they count as the board edge for enclosures. A mine taken by a ring or an enclosure stays hidden and doesn't explode, until the other player captures that cell. A blast never reaches a base, the centre base or the cells around them.</p>
       <p><b>Enclose an area</b> with your cells (the board edge counts) and it all becomes yours. Rings and enclosures also take enemy cells without walls, unless the enemy's defense is greater than your attack.</p>
       <p><b>All your cells share one attack and one defense</b>, shown in your panel. If the enemy captures a cell where you found +attack or +defense, you lose that boost for good. A −attack or −defense you found stays with you.</p>
-      <p><b>End:</b> when the board is full and nobody captures anything for 2 rounds, the player with more cells wins. Equal cells is a draw. Each game also has a round limit of 3 × the number of cells (shown under the board); when it is reached, the player with more cells wins. Retiring gives the win to the other player.</p>
+      <p><b>End:</b> when the board is full and nobody captures anything for 2 rounds, the player with more cells wins. Equal cells is a draw. The cells are also counted when neither player's number of cells has changed for 3 rounds (even if cells keep being traded back and forth). Each game also has a round limit of 3 × the number of cells (shown under the board); when it is reached, the player with more cells wins. Retiring gives the win to the other player.</p>
       <p><b>Levels:</b> win or draw against the CPU to level up. The board grows every 4 levels (up to 15 cells per side) and more items are hidden. Starting attack and defense equal your level.</p>
     </div>
   </template>
 
-  <script src="js/config.js?v=1.9.3"></script>
-  <script src="js/game.js?v=1.9.3"></script>
-  <script src="js/cpu.js?v=1.9.3"></script>
-  <script src="js/crypto.js?v=1.9.3"></script>
-  <script src="js/auth.js?v=1.9.3"></script>
-  <script src="js/drive.js?v=1.9.3"></script>
-  <script src="js/store.js?v=1.9.3"></script>
-  <script src="js/sound.js?v=1.9.3"></script>
-  <script src="js/music.js?v=1.9.3"></script>
-  <script src="js/ui.js?v=1.9.3"></script>
-  <script src="js/main.js?v=1.9.3"></script>
+  <script src="js/config.js?v=1.9.4"></script>
+  <script src="js/game.js?v=1.9.4"></script>
+  <script src="js/cpu.js?v=1.9.4"></script>
+  <script src="js/crypto.js?v=1.9.4"></script>
+  <script src="js/auth.js?v=1.9.4"></script>
+  <script src="js/drive.js?v=1.9.4"></script>
+  <script src="js/store.js?v=1.9.4"></script>
+  <script src="js/sound.js?v=1.9.4"></script>
+  <script src="js/music.js?v=1.9.4"></script>
+  <script src="js/ui.js?v=1.9.4"></script>
+  <script src="js/main.js?v=1.9.4"></script>
 </body>
 </html>

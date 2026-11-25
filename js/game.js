@@ -411,6 +411,7 @@
       if (full && fullBefore) state.quiet = ev.captured ? 0 : state.quiet + 1;
       else state.quiet = 0;
       if (state.quiet >= DRAW_MOVES) endByCount(state, 'stalemate');
+      else if (standstill(state)) endByCount(state, 'standstill');
       else if (state.moves >= 2 * maxRounds(state)) endByCount(state, 'limit');
     }
 
@@ -445,6 +446,7 @@
     else {
       if (emptyCount(state) === 0) state.quiet++;
       if (state.quiet >= DRAW_MOVES) endByCount(state, 'stalemate');
+      else if (standstill(state)) endByCount(state, 'standstill');
       else if (state.moves >= 2 * maxRounds(state)) endByCount(state, 'limit');
       else state.turn = 1 - p;
     }
@@ -457,6 +459,20 @@
     if (state.lastPass === 1 - p) return 'count';
     if (state.passes && state.passes[p] >= 1) return 'lose';
     return 'ok';
+  }
+
+  // Both players' cell counts are the same as they were 1, 2 and 3 rounds ago (6 moves):
+  // nothing is changing, even if cells are being traded back and forth, so count the cells.
+  const STILL_ROUNDS = 3;
+  function standstill(state) {
+    const n = score(state);
+    const h = state.counts || (state.counts = []);
+    h.push(n[0] + ',' + n[1]);
+    if (h.length > 2 * STILL_ROUNDS + 1) h.shift();
+    if (h.length < 2 * STILL_ROUNDS + 1) return false;
+    const now = h[h.length - 1];
+    for (let k = 1; k <= STILL_ROUNDS; k++) if (h[h.length - 1 - 2 * k] !== now) return false;
+    return true;
   }
 
   function endGame(state, winner, reason) {

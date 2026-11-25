@@ -467,6 +467,7 @@
       forfeit: `${g.players[1 - g.winner] ? g.players[1 - g.winner].name : ''} passed twice in a row.`,
       passes: `Both players passed. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`,
       stalemate: `The board is full and nobody captured anything for 2 rounds. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`,
+      standstill: `Neither side's number of cells changed for 3 rounds. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`,
       limit: `The round limit (${G.maxRounds(g)} rounds) was reached. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`,
       stuck: `Nobody can move. Cells: ${g.players[0].name} ${n[0]}, ${g.players[1].name} ${n[1]}.`
     }[g.reason] || '';

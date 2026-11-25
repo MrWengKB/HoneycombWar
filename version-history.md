@@ -1,3 +1,6 @@
+# v1.9.4
+- Faster endings: when neither player's number of cells has changed for 3 rounds, the cells are counted and the game ends
+
 # v1.9.3
 - If Google sign-in fails in the app, the message now shows Google's reason, to help fix it
 

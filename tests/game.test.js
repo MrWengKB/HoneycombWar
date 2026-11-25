@@ -327,4 +327,27 @@ test('the CPU never sees mines', () => {
   const s = G.createGame({ level: 3, seed: 5 });
   assert.equal(G.clone(s, true).cells.filter(c => c.mine).length, 0);
 });
+test('cells are counted when the counts stay the same for 3 rounds', () => {
+  const s = blank();
+  // fill the board: bottom half to player 0, top half to player 1
+  s.cells.forEach(c => { if (c.owner === -1) c.owner = c.r > 0 || (c.r === 0 && c.q < 0) ? 0 : 1; });
+  s.players[0].atk = 1; s.players[1].def = 5; // bottom can't do damage
+  s.players[1].atk = 1; s.players[0].def = 5; // top can't either
+  const front = p => s.cells.findIndex((c, i) => c.owner === 1 - p && c.base === undefined && !c.hive && G.moveKind(s, i, p) === 'attack');
+  let moves = 0;
+  while (s.status === 'playing' && moves < 20) { G.play(s, front(s.turn)); moves++; }
+  assert.equal(s.status, 'won'); assert.equal(s.reason, 'stalemate'); // the full-board rule comes first here
+  // trading cells back and forth also ends it
+  const t = blank();
+  t.cells.forEach(c => { if (c.owner === -1) c.owner = c.r > 0 || (c.r === 0 && c.q < 0) ? 0 : 1; });
+  t.players[0].atk = 9; t.players[1].atk = 9;
+  let k = 0;
+  while (t.status === 'playing' && k < 40) {
+    const p = t.turn;
+    const i = t.cells.findIndex((c, j) => G.moveKind(t, j, p) === 'attack');
+    G.play(t, i); k++;
+  }
+  assert.equal(t.status !== 'playing', true);
+  assert.ok(['standstill', 'surround'].includes(t.reason), t.reason);
+});
 console.log(`\n${n} tests passed`);
