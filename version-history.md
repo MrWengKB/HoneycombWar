@@ -1,3 +1,9 @@
+# v1.9.14
+- Traditional Chinese (蜂窩戰爭), with Taiwan wording, for the game, the how-to, the privacy and delete-data pages, the app's update prompt, the ad messages and the app name on the home screen
+- Language buttons "En 简 繁" on the sign-in screen and the main menu. The choice is remembered on this device and wins over the phone or browser language
+- Without a choice, phones and browsers set to Chinese (Taiwan), Chinese (Hong Kong) or Traditional Chinese now get Traditional Chinese; other Chinese gets Simplified
+- On the website, ?lang=en, ?lang=zh or ?lang=tw in the address still picks a language for that visit
+
 # v1.9.13
 - The end-of-game message now says whose base was surrounded: "Your base" or "CPU's base" against the CPU, and the players' names in friend games (also in Chinese)
 - A retired game now says who retired

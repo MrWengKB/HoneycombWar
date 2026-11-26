@@ -45,7 +45,7 @@ public class SupportActivity extends Activity {
         box.setBackgroundColor(getColor(R.color.page_bg));
         box.addView(new ProgressBar(this));
         TextView text = new TextView(this);
-        text.setText(R.string.ad_loading);
+        text.setText(Lang.wrap(this).getString(R.string.ad_loading));
         text.setTextColor(getColor(R.color.ink));
         text.setTextSize(16);
         text.setPadding(0, 32, 0, 0);
@@ -75,12 +75,12 @@ public class SupportActivity extends Activity {
     }
 
     private void done() {
-        if (rewarded) Toast.makeText(this, R.string.ad_thanks, Toast.LENGTH_LONG).show();
+        if (rewarded) Toast.makeText(this, Lang.wrap(this).getString(R.string.ad_thanks), Toast.LENGTH_LONG).show();
         finish();
     }
 
     private void fail() {
-        Toast.makeText(this, R.string.ad_unavailable, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, Lang.wrap(this).getString(R.string.ad_unavailable), Toast.LENGTH_LONG).show();
         finish();
     }
 }

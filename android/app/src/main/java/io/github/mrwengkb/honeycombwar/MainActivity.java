@@ -152,7 +152,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void checkUpdates() {
             runOnUiThread(() -> {
-                Toast.makeText(MainActivity.this, "Checking for updates…", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, tr("Checking for updates…", "正在检查更新…", "正在檢查更新…"), Toast.LENGTH_SHORT).show();
                 checkForUpdate(true);
             });
         }
@@ -172,6 +172,12 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public boolean canSignIn() {
             return true;
+        }
+
+        /** The language the player picked in the game ("en", "zh", "tw", or "" to follow the phone) */
+        @JavascriptInterface
+        public void setLang(String v) {
+            Lang.set(MainActivity.this, v);
         }
 
         @JavascriptInterface
@@ -261,18 +267,18 @@ public class MainActivity extends Activity {
             try {
                 String json = httpGet(RELEASE_API, "application/vnd.github+json");
                 if (json == null) {
-                    if (manual) toast(tr("No update found. You have the latest version.", "没有找到更新，你已经是最新版本。"));
+                    if (manual) toast(tr("No update found. You have the latest version.", "没有找到更新，你已经是最新版本。", "沒有找到更新，你已經是最新版本。"));
                     return;
                 }
                 JSONObject release = new JSONObject(json);
                 Matcher m = BUILD_NO.matcher(release.optString("body", ""));
                 if (!m.find()) {
-                    if (manual) toast(tr("No update found. You have the latest version.", "没有找到更新，你已经是最新版本。"));
+                    if (manual) toast(tr("No update found. You have the latest version.", "没有找到更新，你已经是最新版本。", "沒有找到更新，你已經是最新版本。"));
                     return;
                 }
                 final long latest = Long.parseLong(m.group(1));
                 if (latest <= currentVersionCode()) {
-                    if (manual) toast(tr("You have the latest version.", "你已经是最新版本。"));
+                    if (manual) toast(tr("You have the latest version.", "你已经是最新版本。", "你已經是最新版本。"));
                     return;
                 }
                 if (!manual && latest == prefs().getLong(KEY_IGNORED, -1)) return; // the player ignored this one
@@ -295,34 +301,34 @@ public class MainActivity extends Activity {
                 final String downloadUrl = url;
                 runOnUiThread(() -> showUpdateDialog(downloadUrl, notes, latestVersion, latest));
             } catch (Exception e) {
-                if (manual) toast(tr("Couldn't check for updates. Please check your internet connection.", "无法检查更新，请检查网络连接。"));
+                if (manual) toast(tr("Couldn't check for updates. Please check your internet connection.", "无法检查更新，请检查网络连接。", "無法檢查更新，請檢查網路連線。"));
             }
         }).start();
     }
 
     private void showUpdateDialog(String downloadUrl, CharSequence notes, String latestVersion, long build) {
         if (isFinishing() || isDestroyed()) return;
-        SpannableStringBuilder msg = new SpannableStringBuilder(tr("A new version is available.", "有新版本可用。"));
+        SpannableStringBuilder msg = new SpannableStringBuilder(tr("A new version is available.", "有新版本可用。", "有新版本可用。"));
         String current = currentVersionName();
-        if (current != null) msg.append(tr("\nInstalled: v", "\n已安装：v")).append(current);
-        if (latestVersion != null) msg.append(tr("\nLatest: v", "\n最新：v")).append(latestVersion);
+        if (current != null) msg.append(tr("\nInstalled: v", "\n已安装：v", "\n已安裝：v")).append(current);
+        if (latestVersion != null) msg.append(tr("\nLatest: v", "\n最新：v", "\n最新：v")).append(latestVersion);
         if (notes != null && notes.length() > 0) msg.append("\n\n").append(notes);
-        msg.append(tr("\n\nInstall downloads the new APK. Open it when the download finishes to install over this version. Your progress is kept.", "\n\n点“安装”会下载新的 APK。下载完成后打开它，即可覆盖安装当前版本。你的进度会保留。"));
+        msg.append(tr("\n\nInstall downloads the new APK. Open it when the download finishes to install over this version. Your progress is kept.", "\n\n点“安装”会下载新的 APK。下载完成后打开它，即可覆盖安装当前版本。你的进度会保留。", "\n\n點「安裝」會下載新的 APK。下載完成後開啟它，即可覆蓋安裝目前的版本。你的進度會保留。"));
 
         new AlertDialog.Builder(this)
-                .setTitle(tr("Update available", "有可用更新"))
+                .setTitle(tr("Update available", "有可用更新", "有可用的更新"))
                 .setMessage(msg)
-                .setPositiveButton(tr("Install", "安装"), (d, w) -> openExternal(Uri.parse(downloadUrl)))
-                .setNegativeButton(tr("Ignore", "忽略"), (d, w) -> prefs().edit().putLong(KEY_IGNORED, build).apply())
-                .setNeutralButton(tr("Later", "以后再说"), null)
+                .setPositiveButton(tr("Install", "安装", "安裝"), (d, w) -> openExternal(Uri.parse(downloadUrl)))
+                .setNegativeButton(tr("Ignore", "忽略", "忽略"), (d, w) -> prefs().edit().putLong(KEY_IGNORED, build).apply())
+                .setNeutralButton(tr("Later", "以后再说", "以後再說"), null)
                 .show();
     }
 
     private SharedPreferences prefs() { return getSharedPreferences(PREFS, MODE_PRIVATE); }
 
-    /** Chinese when the phone's language is Chinese, like the game page */
-    private static String tr(String en, String zh) {
-        return "zh".equals(java.util.Locale.getDefault().getLanguage()) ? zh : en;
+    /** English, Simplified or Traditional Chinese, like the game page (see Lang) */
+    private String tr(String en, String zh, String tw) {
+        return Lang.pick(this, en, zh, tw);
     }
 
     private void toast(String text) {

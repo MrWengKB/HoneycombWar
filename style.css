@@ -66,6 +66,13 @@ h2 { font-size: 1.35rem; }
 
 .menuhead { display: flex; gap: 14px; align-items: center; margin-bottom: 16px; }
 .menuhead h1 { font-size: 1.4rem; margin: 0; }
+/* Language picker: En 简 繁 */
+.langpick { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; flex: none; }
+.langpick button { min-width: 38px; min-height: 34px; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: .9rem; cursor: pointer; padding: 4px 8px; }
+.langpick button + button { border-left: 1px solid var(--line); }
+.langpick button.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.hero .langpick { width: max-content; margin: -6px -6px 6px auto; }
+.menuhead .langpick { margin-left: auto; align-self: flex-start; }
 .who { color: var(--muted); font-size: .9rem; overflow-wrap: anywhere; }
 .levelbox { display: flex; gap: 16px; align-items: center; background: rgba(245, 179, 1, .12); border-radius: 14px; padding: 14px; }
 .lvl { text-align: center; min-width: 72px; }

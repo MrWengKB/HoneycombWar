@@ -2,12 +2,12 @@
 (function () {
   'use strict';
   const G = window.HexGame, UI = window.UI, cfg = window.HW_CONFIG;
-  const tr = window.I18N.tr, ZH = window.I18N.zh;
+  const tr = window.I18N.tr, cv = window.I18N.cv, ZH = window.I18N.zh;
   const $ = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
   const COLORS = ['#2f7de1', '#e0533d', '#21a366', '#8e5bd6', '#f08c00', '#d63a8a', '#0e9aa7', '#5c6b7a', '#c49a00', '#6b4226'];
   const COLOR_NAMES = ZH
-    ? { '#2f7de1': '蓝色', '#e0533d': '红色', '#21a366': '绿色', '#8e5bd6': '紫色', '#f08c00': '橙色', '#d63a8a': '粉色', '#0e9aa7': '青色', '#5c6b7a': '石板灰', '#c49a00': '金色', '#6b4226': '棕色' }
+    ? Object.fromEntries(Object.entries({ '#2f7de1': '蓝色', '#e0533d': '红色', '#21a366': '绿色', '#8e5bd6': '紫色', '#f08c00': '橙色', '#d63a8a': '粉色', '#0e9aa7': '青色', '#5c6b7a': '石板灰', '#c49a00': '金色', '#6b4226': '棕色' }).map(([k, v]) => [k, cv(v)]))
     : { '#2f7de1': 'Blue', '#e0533d': 'Red', '#21a366': 'Green', '#8e5bd6': 'Purple', '#f08c00': 'Orange', '#d63a8a': 'Pink', '#0e9aa7': 'Teal', '#5c6b7a': 'Slate', '#c49a00': 'Gold', '#6b4226': 'Brown' };
   // Player names as shown: the CPU game's built-in "You" and "CPU" are translated, friends' names are their own
   const nm = pl => pl.cpu ? tr('CPU', '电脑') : pl.name === 'You' ? tr('You', '你') : pl.name;
@@ -154,10 +154,10 @@
   }
   function setHelp() {
     const mines = G.minesForSide(Number($('#fSide').value) || 5);
-    $('#fSetHelp').textContent = (ZH
+    $('#fSetHelp').textContent = cv((ZH
       ? { all: '全部六种道具，外加隐藏的地雷。', positive: '+攻击、+防御、墙和光环。没有地雷。', negative: '只有 −攻击 和 −防御，外加隐藏的地雷。' }
       : { all: 'All six kinds of items, plus hidden mines.', positive: '+attack, +defense, walls and rings. No mines.', negative: '−attack and −defense only, plus hidden mines.' })[choice.fSet]
-      + (choice.fSet === 'positive' ? '' : tr(` Mines: ${mines} (a third of the cells per side).`, ` 地雷：${mines} 颗（每边格数的三分之一）。`));
+      + (choice.fSet === 'positive' ? '' : tr(` Mines: ${mines} (a third of the cells per side).`, ` 地雷：${mines} 颗（每边格数的三分之一）。`)));
   }
 
   async function openCpuSetup() {
@@ -377,7 +377,7 @@
       icon: '🏳️',
       title: tr('No way back', '无力回天'),
       body: ZH
-        ? `${game.mode === 'friend' ? pl.name + '，' : ''}已经没有你能占领的灰色格子了，而且你的攻击（${G.atk(game, p)}）打不过${nm(op)}的防御（${G.def(game, 1 - p)}），所以你无法夺取任何格子。你的格子只会被一个个夺走。现在认输吗？`
+        ? cv(`${game.mode === 'friend' ? pl.name + '，' : ''}已经没有你能占领的灰色格子了，而且你的攻击（${G.atk(game, p)}）打不过${nm(op)}的防御（${G.def(game, 1 - p)}），所以你无法夺取任何格子。你的格子只会被一个个夺走。现在认输吗？`)
         : `${who} are no grey cells left for you to take, and your attack (${G.atk(game, p)}) can't beat ${op.cpu || op.name === 'CPU' ? "the CPU's" : op.name + "'s"} defense (${G.def(game, 1 - p)}), so you can't capture anything. Your cells can only be captured one by one. Retire now?`,
       buttons: [{ label: tr('Keep playing', '继续下'), value: false, kind: 'ghost' }, { label: tr('Retire', '认输'), value: true, kind: 'danger' }]
     });
@@ -399,7 +399,7 @@
       ok: confirmMoves() ? { title: 'Pass this turn?', body: 'Passing twice in a row while the other player keeps playing loses the game.', label: 'Pass' } : null
     }[out];
     if (dlg) {
-      const v = await UI.dialog({ icon: dlg.icon, title: dlg.title, body: dlg.body, buttons: [{ label: tr('Cancel', '取消'), value: false, kind: 'ghost' }, { label: dlg.label, value: true, kind: out === 'ok' ? 'primary' : 'danger' }] });
+      const v = await UI.dialog({ icon: dlg.icon, title: cv(dlg.title), body: cv(dlg.body), buttons: [{ label: tr('Cancel', '取消'), value: false, kind: 'ghost' }, { label: cv(dlg.label), value: true, kind: out === 'ok' ? 'primary' : 'danger' }] });
       if (!v || !humanTurn() || game.turn !== p) return;
     }
     selected = -1;
@@ -506,7 +506,7 @@
       : loserPl.cpu ? tr("CPU's base", '电脑的基地')
       : g.mode === 'cpu' ? tr('Your base', '你的基地')
       : tr(`${loserPl.name}'s base`, `${loserPl.name}的基地`);
-    const why = (ZH ? {
+    const why = cv((ZH ? {
       surround: `${baseOf}被包围了。`,
       retire: `${loser}认输了。`,
       forfeit: `${loser}连续跳过了两次。`,
@@ -524,7 +524,7 @@
       standstill: "Neither side's number of cells changed for 3 rounds." + cells,
       limit: `The round limit (${G.maxRounds(g)} rounds) was reached.` + cells,
       stuck: 'Nobody can move.' + cells
-    })[g.reason] || '';
+    })[g.reason] || '');
     const delay = 0.6;
     setTimeout(() => window.Sound.play(g.status === 'draw' ? 'draw' : g.mode === 'cpu' && g.winner === 1 ? 'lose' : 'win'), delay * 1000);
     let title, icon;
@@ -593,12 +593,12 @@
     $('#btnCredits').addEventListener('click', () => {
       const box = document.createElement('div');
       box.className = 'credits';
-      box.innerHTML = ZH ? `<p>背景音乐：<b>“New Sunrise”</b>，来自
+      box.innerHTML = ZH ? cv(`<p>背景音乐：<b>“New Sunrise”</b>，来自
         <a href="https://opengameart.org/content/new-sunrise" target="_blank" rel="noopener">OpenGameArt.org</a>。</p>
         <p>许可协议：<a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener">CC0 1.0 通用（公共领域贡献）</a>。
         无需署名，但仍要感谢它的创作者。</p>
         <p><a href="https://github.com/MrWengKB/ELAdventure" target="_blank" rel="noopener">ELAdventure</a> 里也用了同一首曲子。</p>
-        <p>音效由游戏本身在浏览器里生成。</p>` : `<p>Background music: <b>“New Sunrise”</b>, from
+        <p>音效由游戏本身在浏览器里生成。</p>`) : `<p>Background music: <b>“New Sunrise”</b>, from
         <a href="https://opengameart.org/content/new-sunrise" target="_blank" rel="noopener">OpenGameArt.org</a>.</p>
         <p>License: <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener">CC0 1.0 Universal (Public Domain Dedication)</a>.
         No attribution is required, but thank you to its creator.</p>

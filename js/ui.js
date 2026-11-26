@@ -38,10 +38,10 @@
   }
   function itemText(it) {
     if (window.I18N && window.I18N.zh) {
-      return {
+      return window.I18N.cv({
         'atk+': ` +${it.value} 攻击`, 'atk-': ` −${it.value} 攻击`, 'def+': ` +${it.value} 防御`, 'def-': ` −${it.value} 防御`,
         wall: ` ${it.value} 层墙`, ring: '光环'
-      }[it.type];
+      }[it.type]);
     }
     return {
       'atk+': `+${it.value} attack`, 'atk-': `−${it.value} attack`, 'def+': `+${it.value} defense`, 'def-': `−${it.value} defense`,
