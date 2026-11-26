@@ -261,18 +261,18 @@ public class MainActivity extends Activity {
             try {
                 String json = httpGet(RELEASE_API, "application/vnd.github+json");
                 if (json == null) {
-                    if (manual) toast("No update found. You have the latest version.");
+                    if (manual) toast(tr("No update found. You have the latest version.", "没有找到更新，你已经是最新版本。"));
                     return;
                 }
                 JSONObject release = new JSONObject(json);
                 Matcher m = BUILD_NO.matcher(release.optString("body", ""));
                 if (!m.find()) {
-                    if (manual) toast("No update found. You have the latest version.");
+                    if (manual) toast(tr("No update found. You have the latest version.", "没有找到更新，你已经是最新版本。"));
                     return;
                 }
                 final long latest = Long.parseLong(m.group(1));
                 if (latest <= currentVersionCode()) {
-                    if (manual) toast("You have the latest version.");
+                    if (manual) toast(tr("You have the latest version.", "你已经是最新版本。"));
                     return;
                 }
                 if (!manual && latest == prefs().getLong(KEY_IGNORED, -1)) return; // the player ignored this one
@@ -295,30 +295,35 @@ public class MainActivity extends Activity {
                 final String downloadUrl = url;
                 runOnUiThread(() -> showUpdateDialog(downloadUrl, notes, latestVersion, latest));
             } catch (Exception e) {
-                if (manual) toast("Couldn't check for updates. Please check your internet connection.");
+                if (manual) toast(tr("Couldn't check for updates. Please check your internet connection.", "无法检查更新，请检查网络连接。"));
             }
         }).start();
     }
 
     private void showUpdateDialog(String downloadUrl, CharSequence notes, String latestVersion, long build) {
         if (isFinishing() || isDestroyed()) return;
-        SpannableStringBuilder msg = new SpannableStringBuilder("A new version is available.");
+        SpannableStringBuilder msg = new SpannableStringBuilder(tr("A new version is available.", "有新版本可用。"));
         String current = currentVersionName();
-        if (current != null) msg.append("\nInstalled: v").append(current);
-        if (latestVersion != null) msg.append("\nLatest: v").append(latestVersion);
+        if (current != null) msg.append(tr("\nInstalled: v", "\n已安装：v")).append(current);
+        if (latestVersion != null) msg.append(tr("\nLatest: v", "\n最新：v")).append(latestVersion);
         if (notes != null && notes.length() > 0) msg.append("\n\n").append(notes);
-        msg.append("\n\nInstall downloads the new APK. Open it when the download finishes to install over this version. Your progress is kept.");
+        msg.append(tr("\n\nInstall downloads the new APK. Open it when the download finishes to install over this version. Your progress is kept.", "\n\n点“安装”会下载新的 APK。下载完成后打开它，即可覆盖安装当前版本。你的进度会保留。"));
 
         new AlertDialog.Builder(this)
-                .setTitle("Update available")
+                .setTitle(tr("Update available", "有可用更新"))
                 .setMessage(msg)
-                .setPositiveButton("Install", (d, w) -> openExternal(Uri.parse(downloadUrl)))
-                .setNegativeButton("Ignore", (d, w) -> prefs().edit().putLong(KEY_IGNORED, build).apply())
-                .setNeutralButton("Later", null)
+                .setPositiveButton(tr("Install", "安装"), (d, w) -> openExternal(Uri.parse(downloadUrl)))
+                .setNegativeButton(tr("Ignore", "忽略"), (d, w) -> prefs().edit().putLong(KEY_IGNORED, build).apply())
+                .setNeutralButton(tr("Later", "以后再说"), null)
                 .show();
     }
 
     private SharedPreferences prefs() { return getSharedPreferences(PREFS, MODE_PRIVATE); }
+
+    /** Chinese when the phone's language is Chinese, like the game page */
+    private static String tr(String en, String zh) {
+        return "zh".equals(java.util.Locale.getDefault().getLanguage()) ? zh : en;
+    }
 
     private void toast(String text) {
         runOnUiThread(() -> Toast.makeText(this, text, Toast.LENGTH_LONG).show());

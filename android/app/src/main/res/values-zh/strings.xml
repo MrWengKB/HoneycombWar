@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">蜂窝战争</string>
+    <string name="ad_loading">正在加载广告… 感谢你的支持！</string>
+    <string name="ad_thanks">感谢你支持蜂窝战争！</string>
+    <string name="ad_unavailable">现在没有可用的广告，请稍后再试。</string>
+</resources>

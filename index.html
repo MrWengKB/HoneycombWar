@@ -3,25 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Honeycomb War</title>
-  <meta name="description" content="A turn-based strategy game on a honeycomb board. Claim cells, find hidden items, and surround the enemy base.">
+  <title data-zh="蜂窝战争">Honeycomb War</title>
+  <meta name="description" data-zh-content="一款在蜂窝棋盘上进行的回合制策略游戏。占领格子，发现隐藏道具，包围敌方基地。" content="A turn-based strategy game on a honeycomb board. Claim cells, find hidden items, and surround the enemy base.">
   <meta name="theme-color" content="#f5b301">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=1.9.11">
+  <link rel="stylesheet" href="style.css?v=1.9.12">
 </head>
 <body>
   <!-- Welcome -->
   <section id="welcome" class="screen">
     <div class="card hero">
       <img src="favicon.svg" alt="" class="logo">
-      <h1>Honeycomb War</h1>
-      <p class="sub">Claim the honeycomb, find hidden items, and surround the enemy base.</p>
+      <h1 data-zh="蜂窝战争">Honeycomb War</h1>
+      <p class="sub" data-zh="占领蜂窝，发现隐藏道具，包围敌方基地。">Claim the honeycomb, find hidden items, and surround the enemy base.</p>
       <button id="btnGoogle" class="btn google" type="button">
         <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        <span>Sign in with Google</span>
+        <span data-zh="使用 Google 登录">Sign in with Google</span>
       </button>
-      <button id="btnGuest" class="btn ghost" type="button">Play without signing in</button>
-      <p class="note">Signing in saves your progress in your own Google Drive, in a folder called “Honeycomb War”. The game can only see the files it creates.</p>
+      <button id="btnGuest" class="btn ghost" type="button" data-zh="不登录直接玩">Play without signing in</button>
+      <p class="note" data-zh="登录后，你的进度会保存在你自己的 Google 云端硬盘中名为“Honeycomb War”的文件夹里。游戏只能看到它自己创建的文件。">Signing in saves your progress in your own Google Drive, in a folder called “Honeycomb War”. The game can only see the files it creates.</p>
       <p id="welcomeMsg" class="msg warn" hidden></p>
     </div>
   </section>
@@ -32,33 +32,33 @@
       <div class="menuhead">
         <img src="favicon.svg" alt="" class="logo small">
         <div>
-          <h1>Honeycomb War</h1>
+          <h1 data-zh="蜂窝战争">Honeycomb War</h1>
           <div id="who" class="who"></div>
         </div>
       </div>
       <div class="levelbox">
-        <div class="lvl"><span>Level</span><b id="mLevel">1</b></div>
+        <div class="lvl"><span data-zh="等级">Level</span><b id="mLevel">1</b></div>
         <div class="lvlinfo" id="mLevelInfo"></div>
       </div>
       <div class="record" id="mRecord"></div>
       <div id="syncBar" class="sync"></div>
       <div class="menubtns">
-        <button id="btnContinue" class="btn primary" type="button" hidden>Continue game</button>
-        <button id="btnCpu" class="btn primary" type="button">Play vs CPU</button>
-        <button id="btnFriend" class="btn" type="button">Play with a friend</button>
-        <button id="btnHow" class="btn ghost" type="button">How to play</button>
-        <button id="btnSupport" class="btn ghost app-only" type="button">❤️ Support the author</button>
+        <button id="btnContinue" class="btn primary" type="button" hidden data-zh="继续游戏">Continue game</button>
+        <button id="btnCpu" class="btn primary" type="button" data-zh="对战电脑">Play vs CPU</button>
+        <button id="btnFriend" class="btn" type="button" data-zh="和朋友对战">Play with a friend</button>
+        <button id="btnHow" class="btn ghost" type="button" data-zh="游戏规则">How to play</button>
+        <button id="btnSupport" class="btn ghost app-only" type="button" data-zh="❤️ 支持作者">❤️ Support the author</button>
       </div>
-      <label class="toggle"><input type="checkbox" id="optMusic"> Play background music</label>
-      <label class="toggle"><input type="checkbox" id="optConfirm"> Tap twice to confirm a move</label>
+      <label class="toggle"><input type="checkbox" id="optMusic"> <span data-zh="播放背景音乐">Play background music</span></label>
+      <label class="toggle"><input type="checkbox" id="optConfirm"> <span data-zh="点两次确认落子">Tap twice to confirm a move</span></label>
       <div class="menufoot">
         <button id="btnAccount" class="link" type="button"></button>
         <span>·</span>
-        <button id="btnUpdates" class="link app-only" type="button">Check for updates</button>
+        <button id="btnUpdates" class="link app-only" type="button" data-zh="检查更新">Check for updates</button>
         <span class="app-only">·</span>
-        <a href="privacy.html" class="link">Privacy</a>
+        <a href="privacy.html" class="link" data-zh="隐私">Privacy</a>
         <span>·</span>
-        <button id="btnCredits" class="link" type="button">Music credits</button>
+        <button id="btnCredits" class="link" type="button" data-zh="音乐来源">Music credits</button>
         <span>·</span>
         <span id="ver"></span>
       </div>
@@ -68,18 +68,18 @@
   <!-- Setup: vs CPU -->
   <section id="setupCpu" class="screen" hidden>
     <div class="card">
-      <h2>Play vs CPU</h2>
+      <h2 data-zh="对战电脑">Play vs CPU</h2>
       <p id="cpuInfo" class="sub"></p>
-      <div class="field"><label>Your colour</label><div class="swatches" data-for="cpuMe"></div></div>
-      <div class="field"><label>CPU colour</label><div class="swatches" data-for="cpuThem"></div></div>
-      <div class="field"><label>Who goes first</label>
+      <div class="field"><label data-zh="你的颜色">Your colour</label><div class="swatches" data-for="cpuMe"></div></div>
+      <div class="field"><label data-zh="电脑的颜色">CPU colour</label><div class="swatches" data-for="cpuThem"></div></div>
+      <div class="field"><label data-zh="谁先走">Who goes first</label>
         <div class="seg" data-for="cpuFirst">
-          <button type="button" data-v="0">You</button><button type="button" data-v="1">CPU</button><button type="button" data-v="r">Random</button>
+          <button type="button" data-v="0" data-zh="你">You</button><button type="button" data-v="1" data-zh="电脑">CPU</button><button type="button" data-v="r" data-zh="随机">Random</button>
         </div>
       </div>
       <div class="row">
-        <button class="btn ghost" type="button" data-back>Back</button>
-        <button id="startCpu" class="btn primary" type="button">Start</button>
+        <button class="btn ghost" type="button" data-back data-zh="返回">Back</button>
+        <button id="startCpu" class="btn primary" type="button" data-zh="开始">Start</button>
       </div>
     </div>
   </section>
@@ -87,36 +87,36 @@
   <!-- Setup: friend -->
   <section id="setupFriend" class="screen" hidden>
     <div class="card">
-      <h2>Play with a friend</h2>
-      <p class="sub">Friend games do not change your level.</p>
+      <h2 data-zh="和朋友对战">Play with a friend</h2>
+      <p class="sub" data-zh="和朋友对战不会改变你的等级。">Friend games do not change your level.</p>
       <div class="two">
-        <div class="field"><label for="fName0">Bottom player</label><input id="fName0" maxlength="16" value="Player 1"><div class="swatches" data-for="f0"></div></div>
-        <div class="field"><label for="fName1">Top player</label><input id="fName1" maxlength="16" value="Player 2"><div class="swatches" data-for="f1"></div></div>
+        <div class="field"><label for="fName0" data-zh="下方玩家">Bottom player</label><input id="fName0" maxlength="16" value="Player 1"><div class="swatches" data-for="f0"></div></div>
+        <div class="field"><label for="fName1" data-zh="上方玩家">Top player</label><input id="fName1" maxlength="16" value="Player 2"><div class="swatches" data-for="f1"></div></div>
       </div>
-      <div class="field"><label>Who goes first</label>
+      <div class="field"><label data-zh="谁先走">Who goes first</label>
         <div class="seg" data-for="fFirst">
-          <button type="button" data-v="0">Bottom</button><button type="button" data-v="1">Top</button><button type="button" data-v="r">Random</button>
+          <button type="button" data-v="0" data-zh="下方">Bottom</button><button type="button" data-v="1" data-zh="上方">Top</button><button type="button" data-v="r" data-zh="随机">Random</button>
         </div>
       </div>
-      <div class="field"><label>How you sit</label>
+      <div class="field"><label data-zh="座位方式">How you sit</label>
         <div class="seg" data-for="fLayout">
-          <button type="button" data-v="pass">Pass and play</button><button type="button" data-v="face">Face to face (tablet)</button>
+          <button type="button" data-v="pass" data-zh="轮流传递">Pass and play</button><button type="button" data-v="face" data-zh="面对面（平板）">Face to face (tablet)</button>
         </div>
       </div>
       <div class="two">
-        <div class="field"><label for="fSide">Board size (cells per side)</label><select id="fSide"></select></div>
-        <div class="field"><label for="fItems">Hidden items</label><input id="fItems" type="number" min="0" step="1"><small id="fItemsMax"></small></div>
+        <div class="field"><label for="fSide" data-zh="棋盘大小（每边格数）">Board size (cells per side)</label><select id="fSide"></select></div>
+        <div class="field"><label for="fItems" data-zh="隐藏道具">Hidden items</label><input id="fItems" type="number" min="0" step="1"><small id="fItemsMax"></small></div>
       </div>
-      <div class="field"><label>Items</label>
+      <div class="field"><label data-zh="道具">Items</label>
         <div class="seg" data-for="fSet">
-          <button type="button" data-v="all">All</button><button type="button" data-v="positive">Positive only</button><button type="button" data-v="negative">Negative only</button>
+          <button type="button" data-v="all" data-zh="全部">All</button><button type="button" data-v="positive" data-zh="只有增益">Positive only</button><button type="button" data-v="negative" data-zh="只有减益">Negative only</button>
         </div>
         <small id="fSetHelp"></small>
       </div>
-      <div class="field"><label for="fStrength">Starting attack and defense</label><input id="fStrength" type="number" min="1" max="50" value="1"></div>
+      <div class="field"><label for="fStrength" data-zh="初始攻击和防御">Starting attack and defense</label><input id="fStrength" type="number" min="1" max="50" value="1"></div>
       <div class="row">
-        <button class="btn ghost" type="button" data-back>Back</button>
-        <button id="startFriend" class="btn primary" type="button">Start</button>
+        <button class="btn ghost" type="button" data-back data-zh="返回">Back</button>
+        <button id="startFriend" class="btn primary" type="button" data-zh="开始">Start</button>
       </div>
     </div>
   </section>
@@ -125,19 +125,19 @@
   <section id="game" class="screen gamescreen" hidden>
     <div class="panel" id="panel1"></div>
     <div class="boardwrap" id="boardWrap">
-      <svg id="board" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Game board"></svg>
+      <svg id="board" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Game board" data-zh-aria-label="棋盘"></svg>
     </div>
     <div class="feed" id="feed" aria-live="polite"></div>
     <div class="status" id="status"></div>
     <div class="panel" id="panel0"></div>
     <div class="toolbar">
-      <button id="gMenu" class="btn small ghost" type="button">Menu</button>
-      <button id="gZoomOut" class="btn small ghost" type="button" aria-label="Zoom out">−</button>
-      <button id="gZoomIn" class="btn small ghost" type="button" aria-label="Zoom in">+</button>
-      <button id="gHelp" class="btn small ghost" type="button">?</button>
+      <button id="gMenu" class="btn small ghost" type="button" data-zh="菜单">Menu</button>
+      <button id="gZoomOut" class="btn small ghost" type="button" aria-label="Zoom out" data-zh-aria-label="缩小">−</button>
+      <button id="gZoomIn" class="btn small ghost" type="button" aria-label="Zoom in" data-zh-aria-label="放大">+</button>
+      <button id="gHelp" class="btn small ghost" type="button" aria-label="How to play" data-zh-aria-label="游戏规则">?</button>
       <button id="gSound" class="btn small ghost" type="button" aria-label="Sound on">🔊</button>
-      <button id="gPass" class="btn small" type="button">Pass</button>
-      <button id="gRetire" class="btn small danger" type="button">Retire</button>
+      <button id="gPass" class="btn small" type="button" data-zh="跳过">Pass</button>
+      <button id="gRetire" class="btn small danger" type="button" data-zh="认输">Retire</button>
     </div>
   </section>
 
@@ -167,16 +167,41 @@
     </div>
   </template>
 
-  <script src="js/config.js?v=1.9.11"></script>
-  <script src="js/game.js?v=1.9.11"></script>
-  <script src="js/cpu.js?v=1.9.11"></script>
-  <script src="js/crypto.js?v=1.9.11"></script>
-  <script src="js/auth.js?v=1.9.11"></script>
-  <script src="js/drive.js?v=1.9.11"></script>
-  <script src="js/store.js?v=1.9.11"></script>
-  <script src="js/sound.js?v=1.9.11"></script>
-  <script src="js/music.js?v=1.9.11"></script>
-  <script src="js/ui.js?v=1.9.11"></script>
-  <script src="js/main.js?v=1.9.11"></script>
+  <template id="howTplZh">
+    <div class="how">
+      <p><b>目标：</b>包围敌方基地。当基地周围的 6 个格子都是你的，你就赢了。</p>
+      <p><b>城堡：</b>中间的金色格子。从第 3 回合起，第一个占领它的玩家拥有城堡，并在拥有期间获得额外防御：第 1–4 级等于等级，之后增长变慢（第 5–6 级为等级 − 1，第 7–8 级为 − 2，第 9–10 级为 − 3，第 11–12 级为 − 4），从第 12 级起固定为 8。和朋友对战时用初始强度代替等级。城堡不能被攻击；对方只能通过包围它周围的全部 6 个格子来夺取。失去城堡不会输掉游戏。从第 50 级起中间一行有 2 座城堡，第 100 级起有 3 座，第 200 级起有 4 座，第 350 级起有 5 座（中心再加一座）。每座城堡规则相同，各自提供额外防御，一名玩家可以全部拥有。</p>
+      <p><b>你的回合：</b>占领一个与你的格子相邻的灰色格子，或攻击一个与你的格子相邻的敌方格子。每一步都会用掉你的回合，即使攻击失败也一样。你也可以<b>跳过</b>：在对方继续行动时连续跳过两次会输掉游戏；如果双方先后都跳过，游戏结束，格子多的一方获胜。被对方夺走的格子，你不能在紧接着的下一回合夺回。</p>
+      <p><b>攻击：</b>你的攻击 − 对方的防御 = 伤害。伤害大于 0 时，这个格子归你。基地不能被夺取。</p>
+      <p><b>墙：</b>每次伤害至少为 1 的攻击会去掉 1 层墙（每回合一层）。有墙的格子只有在墙全部被打掉后才能被夺取。</p>
+      <p><b>隐藏道具</b>在你占领它所在的格子时出现：</p>
+      <ul class="items">
+        <li><span class="ic atk">A+</span> 攻击加 1 到 4</li>
+        <li><span class="ic bad">A−</span> 攻击减 1 到 4</li>
+        <li><span class="ic def">D+</span> 防御加 1 到 4</li>
+        <li><span class="ic bad">D−</span> 防御减 1 到 4</li>
+        <li><span class="ic wall">W</span> 在该格子上筑起 1 或 2 层墙</li>
+        <li><span class="ic ring">◎</span> 光环：同时占领它周围的格子</li>
+      </ul>
+      <p><b>地雷</b>也是隐藏的：数量是每边格数的三分之一，向下取整（最小的棋盘 1 颗，最大的 5 颗）。直接占领地雷所在的格子（占领空格或攻击）会引爆它：这个格子和周围 6 个格子都会变黑，不管原来属于谁。黑色格子谁都不能占领，在包围时算作棋盘边缘。通过光环或包围拿到的地雷不会爆炸，继续隐藏，直到对方夺取这个格子。爆炸不会波及基地、城堡以及它们周围的格子。</p>
+      <p><b>包围一片区域</b>（棋盘边缘也算），整片区域都归你。光环和包围也能夺取没有墙的敌方格子，除非对方的防御高于你的攻击。</p>
+      <p><b>你所有的格子共用同一个攻击值和防御值</b>，显示在你的面板上。如果敌人夺走了你找到 +攻击 或 +防御 的格子，你会永久失去这项加成。你找到的 −攻击 或 −防御 会一直留着。</p>
+      <p><b>结束：</b>当棋盘被占满，且 2 个回合内没有人夺取任何格子时，格子多的一方获胜，格子数相同则为平局。如果 3 个回合内双方的格子数都没有变化（即使格子来回易手），也会清点格子。每局还有回合上限，为格子总数的 3 倍（显示在棋盘下方）；达到上限时，格子多的一方获胜。认输则对方获胜。</p>
+      <p><b>等级：</b>对战电脑获胜或打平即可升级。棋盘每 4 级变大一次（最多每边 15 格），隐藏的道具也会更多。初始攻击和防御等于你的等级。</p>
+    </div>
+  </template>
+
+  <script src="js/i18n.js?v=1.9.12"></script>
+  <script src="js/config.js?v=1.9.12"></script>
+  <script src="js/game.js?v=1.9.12"></script>
+  <script src="js/cpu.js?v=1.9.12"></script>
+  <script src="js/crypto.js?v=1.9.12"></script>
+  <script src="js/auth.js?v=1.9.12"></script>
+  <script src="js/drive.js?v=1.9.12"></script>
+  <script src="js/store.js?v=1.9.12"></script>
+  <script src="js/sound.js?v=1.9.12"></script>
+  <script src="js/music.js?v=1.9.12"></script>
+  <script src="js/ui.js?v=1.9.12"></script>
+  <script src="js/main.js?v=1.9.12"></script>
 </body>
 </html>

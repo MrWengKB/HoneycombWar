@@ -1,3 +1,7 @@
+# v1.9.12
+- Simplified Chinese: the game, the how-to, the privacy and delete-data pages and the app's update prompt are shown in Chinese (蜂窝战争) when the phone or browser language is Chinese, and in English otherwise
+- On the website, add ?lang=zh or ?lang=en to the address to pick a language by hand
+
 # v1.9.11
 - The 2nd bases are now called castles: same gold cells, same rules, new name everywhere in the game and the how-to
 

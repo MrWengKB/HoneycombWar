@@ -37,6 +37,12 @@
     return itemLabel(c.item);
   }
   function itemText(it) {
+    if (window.I18N && window.I18N.zh) {
+      return {
+        'atk+': ` +${it.value} 攻击`, 'atk-': ` −${it.value} 攻击`, 'def+': ` +${it.value} 防御`, 'def-': ` −${it.value} 防御`,
+        wall: ` ${it.value} 层墙`, ring: '光环'
+      }[it.type];
+    }
     return {
       'atk+': `+${it.value} attack`, 'atk-': `−${it.value} attack`, 'def+': `+${it.value} defense`, 'def-': `−${it.value} defense`,
       wall: `a wall of ${it.value} layer${it.value > 1 ? 's' : ''}`, ring: 'a ring'
@@ -191,7 +197,7 @@
       const row = document.createElement('div');
       row.className = 'mbtns';
       const close = v => { wrap.remove(); document.removeEventListener('keydown', onKey); resolve(v); };
-      (buttons || [{ label: 'OK', value: true, kind: 'primary' }]).forEach(b => {
+      (buttons || [{ label: window.I18N && window.I18N.zh ? '好' : 'OK', value: true, kind: 'primary' }]).forEach(b => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'btn ' + (b.kind || '');
