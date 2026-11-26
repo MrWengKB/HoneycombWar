@@ -1,3 +1,7 @@
+# v1.9.13
+- The end-of-game message now says whose base was surrounded: "Your base" or "CPU's base" against the CPU, and the players' names in friend games (also in Chinese)
+- A retired game now says who retired
+
 # v1.9.12
 - Simplified Chinese: the game, the how-to, the privacy and delete-data pages and the app's update prompt are shown in Chinese (蜂窝战争) when the phone or browser language is Chinese, and in English otherwise
 - On the website, add ?lang=zh or ?lang=en to the address to pick a language by hand

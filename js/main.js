@@ -499,10 +499,16 @@
     const n = G.score(g);
     const n0 = nm(g.players[0]), n1 = nm(g.players[1]);
     const cells = tr(` Cells: ${n0} ${n[0]}, ${n1} ${n[1]}.`, `格子：${n0} ${n[0]}，${n1} ${n[1]}。`);
-    const loser = g.players[1 - g.winner] ? nm(g.players[1 - g.winner]) : '';
+    const loserPl = g.players[1 - g.winner];
+    const loser = loserPl ? nm(loserPl) : '';
+    // Whose base: "Your base" / "CPU's base" against the CPU, the entered names in friend games
+    const baseOf = !loserPl ? tr('The base', '基地')
+      : loserPl.cpu ? tr("CPU's base", '电脑的基地')
+      : g.mode === 'cpu' ? tr('Your base', '你的基地')
+      : tr(`${loserPl.name}'s base`, `${loserPl.name}的基地`);
     const why = (ZH ? {
-      surround: '基地被包围了。',
-      retire: '认输。',
+      surround: `${baseOf}被包围了。`,
+      retire: `${loser}认输了。`,
       forfeit: `${loser}连续跳过了两次。`,
       passes: '双方都跳过了。' + cells,
       stalemate: '棋盘已满，且 2 个回合内没有人夺取格子。' + cells,
@@ -510,8 +516,8 @@
       limit: `已达到回合上限（${G.maxRounds(g)} 回合）。` + cells,
       stuck: '谁都无法行动。' + cells
     } : {
-      surround: 'The base was surrounded.',
-      retire: 'Retired.',
+      surround: `${baseOf} was surrounded.`,
+      retire: `${loser} retired.`,
       forfeit: `${loser} passed twice in a row.`,
       passes: 'Both players passed.' + cells,
       stalemate: 'The board is full and nobody captured anything for 2 rounds.' + cells,
