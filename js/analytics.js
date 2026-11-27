@@ -1,11 +1,11 @@
 /*
- * Google Analytics (GA4) for the website only: counts visits and which pages are used.
+ * Google Analytics (GA4) on the website and in the Android app: counts visits and which pages are used.
  * It never sends game data, names you enter or Google Drive files.
- * The Android app loads the game from appassets.androidplatform.net (offline), so analytics stay off there.
+ * Honeycomb War is not a children's (Families) app, so analytics also run in the APK/AAB.
  */
 (function () {
   var host = location.hostname;
-  if (location.protocol === 'file:' || host === 'appassets.androidplatform.net' || host === 'localhost' || host === '127.0.0.1') return;
+  if (location.protocol === 'file:' || host === 'localhost' || host === '127.0.0.1') return;
   var id = 'G-LVJJ4GY9FC';
   var s = document.createElement('script');
   s.async = true;

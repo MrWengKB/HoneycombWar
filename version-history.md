@@ -1,3 +1,7 @@
+# v1.9.16
+- The Android app now also uses Google Analytics to count visits and see which pages are used, like the website. It never sees your game data, level, names or Google Drive files
+- The privacy page explains this
+
 # v1.9.15
 - The website now uses Google Analytics to count visits and see which pages are used. It never sees your game data, level, names or Google Drive files. The Android app does not use it
 - The privacy page explains this, and now links to the general privacy policy at mrwengkb.com
