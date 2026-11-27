@@ -1,3 +1,7 @@
+# v1.9.15
+- The website now uses Google Analytics to count visits and see which pages are used. It never sees your game data, level, names or Google Drive files. The Android app does not use it
+- The privacy page explains this, and now links to the general privacy policy at mrwengkb.com
+
 # v1.9.14
 - Traditional Chinese (蜂窩戰爭), with Taiwan wording, for the game, the how-to, the privacy and delete-data pages, the app's update prompt, the ad messages and the app name on the home screen
 - Language buttons "En 简 繁" on the sign-in screen and the main menu. The choice is remembered on this device and wins over the phone or browser language
