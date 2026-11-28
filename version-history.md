@@ -1,3 +1,6 @@
+# v1.9.17
+- New "Suggest a feature" link at the bottom of the menu, for sending ideas for the game
+
 # v1.9.16
 - The Android app now also uses Google Analytics to count visits and see which pages are used, like the website. It never sees your game data, level, names or Google Drive files
 - The privacy page explains this
